@@ -1,0 +1,2 @@
+For adder:
+You need to match the exponents. Find the value that has the smaller exponent and make it match the larger one
