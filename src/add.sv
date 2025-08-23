@@ -8,13 +8,13 @@ module floating_point_add (
     logic sign_bit1, sign_bit2;
     logic[7:0] exponent1, exponent2;
     logic[22:0] mantissa1, mantissa2;
-    logic[1:0] add_or_sub;//00 is both positive, 01 is sub 1 from 2, 10 is sub 2 from 1, 11 is both negative
+    logic[1:0] isNegativeLargerSmaller;//00 is both positive, 01 larger is positive smaller is negative, 10 is , 11 is both negative
     logic[7:0] shift_amount;
     logic number_to_shift; //0 shift number1, 1 shift number 2
     assign {sign_bit1, exponent1, mantissa1} = in1;
     assign {sign_bit2, exponent2, mantissa2} = in2;
 
-    assign add_or_sub = {sign_bit1,sign_bit2};
+    
     logic[22:0] smaller_number_mantissa;
     logic[23:0] larger_number_mantissa;
     logic[7:0] larger_number_exponent;
@@ -25,6 +25,7 @@ module floating_point_add (
             smaller_number_mantissa = mantissa2;
             larger_number_mantissa = {1'b1,mantissa1};
             larger_number_exponent = exponent1;
+            isNegativeLargerSmaller = {sign_bit1, sign_bit2};
         end
         else begin
             shift_amount = exponent2 - exponent1;
@@ -32,6 +33,7 @@ module floating_point_add (
             smaller_number_mantissa = mantissa1;
             larger_number_mantissa = {1'b1,mantissa2};
             larger_number_exponent = exponent2;
+            isNegativeLargerSmaller = {sign_bit2, sign_bit1};
         end
     end
 
@@ -52,5 +54,35 @@ module floating_point_add (
 
         {guard_bit, round_bit} = extended_shifted_mantissa[33:32];
         sticky_bit = | extended_shifted_mantissa[31:0]; 
+    end
+
+    //Im going to have both addition and subtraction be calculated at the same time
+    //This is to allow them to run in parallel paths and have a mux select which result to use
+    //This may seem pointless now but it will be more important once I pipeline this
+
+    //Add
+    logic new_guard_bit_add, new_round_bit_add, new_sticky_bit_add;
+    logic is_overflow;
+    logic mantissa_result_add[23:0];
+    logic mantissa_result_final[22:0]; // 1 left of the decimal point isnt represented
+    always_comb begin
+        {is_overflow, mantissa_result_add} = {2'b01, larger_number_mantissa} + {1'b1, shifted_mantissa};
+        if(is_overflow) begin
+            {mantissa_result_final, new_guard_bit_add} = mantissa_result_add;
+            new_round_bit_add = guard_bit;
+            new_sticky_bit_add = round_bit | sticky_bit;
+        end
+        else begin
+            mantissa_result_final = mantissa_result_add[22:0];
+            new_guard_bit_add = guard_bit;
+            new_round_bit_add = round_bit;
+            new_sticky_bit_add = sticky_bit;
+        end
+    end
+
+    //Sub
+
+    always_comb begin
+
     end
 endmodule
