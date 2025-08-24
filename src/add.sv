@@ -63,17 +63,17 @@ module floating_point_add (
     //Add
     logic new_guard_bit_add, new_round_bit_add, new_sticky_bit_add;
     logic is_overflow;
-    logic mantissa_result_add[23:0];
-    logic mantissa_result_final[22:0]; // 1 left of the decimal point isnt represented
+    logic[23:0] mantissa_result_add;
+    logic[22:0] mantissa_result_final_add; // 1 left of the decimal point isnt represented
     always_comb begin
-        {is_overflow, mantissa_result_add} = {2'b01, larger_number_mantissa} + {1'b1, shifted_mantissa};
+        {is_overflow, mantissa_result_add} = {1'b0, larger_number_mantissa} + {1'b0, shifted_mantissa};
         if(is_overflow) begin
-            {mantissa_result_final, new_guard_bit_add} = mantissa_result_add;
+            {mantissa_result_final_add, new_guard_bit_add} = mantissa_result_add;
             new_round_bit_add = guard_bit;
             new_sticky_bit_add = round_bit | sticky_bit;
         end
         else begin
-            mantissa_result_final = mantissa_result_add[22:0];
+            mantissa_result_final_add = mantissa_result_add[22:0];
             new_guard_bit_add = guard_bit;
             new_round_bit_add = round_bit;
             new_sticky_bit_add = sticky_bit;
@@ -81,8 +81,19 @@ module floating_point_add (
     end
 
     //Sub
-
+    logic new_guard_bit_sub, new_round_bit_sub, new_sticky_bit_sub;
+    logic[26:0] mantissa_result_sub;
+    logic[26:0] normalized_mantissa_result_sub;
+    logic[22:0] mantissa_result_final_sub; // 1 left of the decimal point isnt represented
+    logic[4:0] normalization_shift_amount;
+    assign mantissa_result_sub = {larger_number_mantissa, 3'b000} - {shifted_mantissa, guard_bit, round_bit, sticky_bit};
+    leading_zero_detection leading_zero_detector(.sub_result(mantissa_result_sub), .shift_amount(normalization_shift_amount));
     always_comb begin
-
+        normalized_mantissa_result_sub = mantissa_result_sub << normalization_shift_amount;
+        mantissa_result_final_sub = normalized_mantissa_result_sub[25:3];
+        new_guard_bit_sub = normalized_mantissa_result_sub[2];
+        new_round_bit_sub = normalized_mantissa_result_sub[1];
+        if(mantissa_result_sub > 3) new_sticky_bit_sub = 1'b1;
+        else normalized_mantissa_result_sub[0] | sticky_bit;
     end
 endmodule
