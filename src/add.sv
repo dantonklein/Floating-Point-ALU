@@ -3,7 +3,7 @@ module floating_point_add (
     input logic[31:0] in1, in2,
     input logic[2:0] rounding_mode,
     output logic[31:0] out,
-    output logic[2:0] exception 
+    output logic overflow, underflow, inexact
 );
     logic sign_bit1, sign_bit2;
     logic[7:0] exponent1, exponent2;
@@ -62,12 +62,12 @@ module floating_point_add (
 
     //Add
     logic new_guard_bit_add, new_round_bit_add, new_sticky_bit_add;
-    logic is_overflow;
+    logic is_overflow_add;
     logic[23:0] mantissa_result_add;
     logic[22:0] mantissa_result_final_add; // 1 left of the decimal point isnt represented
     always_comb begin
-        {is_overflow, mantissa_result_add} = {1'b0, larger_number_mantissa} + {1'b0, shifted_mantissa};
-        if(is_overflow) begin
+        {is_overflow_add, mantissa_result_add} = {1'b0, larger_number_mantissa} + {1'b0, shifted_mantissa};
+        if(is_overflow_add) begin
             {mantissa_result_final_add, new_guard_bit_add} = mantissa_result_add;
             new_round_bit_add = guard_bit;
             new_sticky_bit_add = round_bit | sticky_bit;
@@ -94,6 +94,22 @@ module floating_point_add (
         new_guard_bit_sub = normalized_mantissa_result_sub[2];
         new_round_bit_sub = normalized_mantissa_result_sub[1];
         if(mantissa_result_sub > 3) new_sticky_bit_sub = 1'b1;
-        else normalized_mantissa_result_sub[0] | sticky_bit;
+        else new_sticky_bit_sub = normalized_mantissa_result_sub[0] | sticky_bit;
     end
+
+    //Decide whether your result is addition or subtraction
+    logic new_guard_bit, new_round_bit, new_sticky_bit;
+    logic [22:0] mantissa_result_pre_round;
+    always_comb begin
+        logic add; 
+        logic subtract;
+        subtract = isNegativeLargerSmaller[1] ^ isNegativeLargerSmaller[0];
+        if(subtract) begin
+            mantissa_result_pre_round = 
+        end
+        else begin
+
+        end
+    end
+
 endmodule
