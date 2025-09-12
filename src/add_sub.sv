@@ -43,7 +43,7 @@ logic input_is_flushed;
 assign input_is_invalid = in1_issnan | in2_issnan | (in1_isinfinite & in2_isinfinite & (in1_isinfinite ^ in2_isinfinite));
 assign input_is_flushed = in1_isdenorm | in2_isdenorm;
 
-//Stage 1: Denorm, NaN processing
+//Stage 1: Denorm, NaN, Zero, Infinity processing
 fp_32b_t s1_special_result, s1_in1, s1_in2;
 logic s1_input_is_invalid;
 logic s1_input_is_flushed;
@@ -139,11 +139,87 @@ always_ff @(posedge clk or posedge rst) begin
             else s1_special_result <= in1_init;
         end else begin
             s1_special_case <= 0;
-            //this doesnt matter
+            //this doesnt matter, but its there to show intent that the special result doesnt get propagated since special case is zero
             s1_special_result <= '0;
         end
     end
 end
 
+//Stage 2: Determine larger input, calculate shifting for smaller input, and determine if the operation is addition or subtraction
+fp_32b_t s2_special_result;
+logic s2_input_is_invalid;
+logic s2_input_is_flushed;
+logic s2_special_case;
+logic s2_valid_data_in;
+logic[2:0] s2_rounding_mode;
+
+//propagating control signals
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s2_special_result <= '0;
+        s2_input_is_invalid <= 0;
+        s2_input_is_flushed <= 0;
+        s2_special_case <= 0;
+        s2_valid_data_in <= 0;
+        s2_rounding_mode <= 0;
+    end
+    else begin
+        s2_special_result <= s1_special_result;
+        s2_input_is_invalid <= s1_input_is_invalid;
+        s2_input_is_flushed <= s1_input_is_flushed;
+        s2_special_case <= s1_special_case;
+        s2_valid_data_in <= s1_valid_data_in;
+        s2_rounding_mode <= s1_rounding_mode;
+    end
+end
+
+
+//determine the larger input, calculate shift amount, and shift smaller input
+logic s2_in1_is_larger;
+logic[7:0] s2_shift_amount_temp; //temp value before it gets cut off at 24
+logic[4:0] s2_shift_amount;
+logic s2_op_is_subtraction;
+fp_32b_t s2_larger, s2_smaller;
+logic s2_result_sign;
+
+logic[47:0] s2_aligned_smaller_mantissa;
+logic s2_alignment_sticky_bit;
+always_comb begin
+    s2_op_is_subtraction = s1_in1.sign ^ s1_in2.sign;
+
+    s2_in1_is_larger = 
+    (s1_in1.exponent > s1_in2.exponent) | 
+    ((s1_in1.exponent == s1_in2.exponent) & ({1'b1, s1_in1.mantissa} >= {1'b1, s1_in2.mantissa}));
+
+    if(s2_in1_is_larger) s2_shift_amount_temp = s1_in1.exponent - s1_in2.exponent;
+    else s2_shift_amount_temp = s1_in2.exponent - s1_in1.exponent;
+
+    if(s2_shift_amount_temp > 24) s2_shift_amount = 5'd24;
+    else s2_shift_amount = s2_shift_amount_temp[4:0];
+
+    if(s2_in1_is_larger) begin
+        s2_larger = s1_in1;
+        s2_smaller = s1_in2;
+        s2_result_sign = s1_in1.sign;
+    end
+    else begin
+        s2_larger = s1_in2;
+        s2_smaller = s1_in1;
+        s2_result_sign = s1_in2.sign;
+    end
+    s2_aligned_smaller_mantissa = {1'b1, s2_smaller.mantissa} >> s2_shift_amount;
+    if(s2_shift_amount) s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[24:0];
+    else s2_alignment_sticky_bit = 0;
+end
+
+//propagate to next stage
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+
+    end
+    else begin
+
+    end
+end
 
 endmodule
