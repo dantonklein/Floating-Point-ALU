@@ -36,7 +36,7 @@ always_comb begin
     s1_in2_iszero = (s1_in2_init.exponent == '0) & (s1_in2_init.mantissa == '0);
     s1_in2_isinfinite = (s1_in2_init.exponent == '1) & (s1_in2_init.mantissa == '0);
     s1_in2_isqnan = (s1_in2_init.exponent == '1) & (s1_in2_init.mantissa != '0) & s1_in2_init.mantissa[22];
-    s1_in2_issnan = (s1_in2_init.exponent == '1) & (s1_in2_init.mantissa != '0) & ~s1_in2_init.mantissa[22];
+    s1_s1_in2_issnan = (s1_in2_init.exponent == '1) & (s1_in2_init.mantissa != '0) & ~s1_in2_init.mantissa[22];
     s1_in2_isdenorm = (s1_in2_init.exponent == '0) & (s1_in2_init.mantissa != '0);
 end
 //flush to zero and invalid input handling
@@ -246,8 +246,6 @@ logic[26:0] s4_subtraction_result;
 logic s4_op_is_subtraction;
 logic s4_alignment_sticky_bit;
 logic s4_exact_zero;
-logic[7:0] s4_larger_number_exponent;
-logic s4_larger_number_sign;
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -263,8 +261,6 @@ always_ff @(posedge clk or posedge rst) begin
         s4_op_is_subtraction <= 0;
         s4_alignment_sticky_bit <= 0;
         s4_exact_zero <= 0;
-        s4_larger_number_exponent <= '0;
-        s4_larger_number_sign <= 0;
     end
     else begin
         s4_special_result <= s3_special_result;
@@ -279,75 +275,10 @@ always_ff @(posedge clk or posedge rst) begin
         s4_op_is_subtraction <= s3_op_is_subtraction;
         s4_alignment_sticky_bit <= s3_alignment_sticky_bit;
         s4_exact_zero <= s3_exact_zero;
-        s4_larger_number_exponent <= s3_larger_number.exponent;
-        s4_larger_number_sign <= s3_larger_number.sign;
     end
 end
 
 //Stage 4: Normalization and Rounding
 
-//determine is adding caused an overflow, if so left shift by one and add one to the exponent
-logic s4_add_overflow;
-logic[23:0] s4_add_normalized_mantissa;
-logic[8:0] s4_add_normalized_exponent;
-logic s4_add_normalized_guard, s4_add_normalized_round, s4_add_normalized_sticky;
-always_comb begin
-    s4_add_overflow = s4_addition_result[27];
-    //addition overflow
-    if(s4_add_overflow) begin
-        s4_add_normalized_mantissa  = s4_addition_result[27:4];
-        s4_add_normalized_guard = s4_addition_result[3];
-        s4_add_normalized_round = s4_addition_result[2];
-        s4_add_normalized_sticky = s4_addition_result[1] | s4_addition_result[0] | s4_alignment_sticky_bit;
-    end
-    else begin
-        s4_add_normalized_mantissa  = s4_addition_result[26:3];
-        s4_add_normalized_guard = s4_addition_result[2];
-        s4_add_normalized_round = s4_addition_result[1];
-        s4_add_normalized_sticky = s4_addition_result[0] | s4_alignment_sticky_bit;
-    end
-    //extra bit is added to detect overflow
-    s4_add_normalized_exponent = {1'b0,s4_larger_number_exponent} + s4_add_overflow;
-end
-
-//subtraction normalization
-logic[4:0] s4_sub_shift_amount;
-leading_zero_detection leading_zero_detector(.sub_result(s4_subtraction_result), .shift_amount(s4_sub_shift_amount));
-logic[26:0] s4_sub_normalized_mantissa_temp;
-logic[23:0] s4_sub_normalized_mantissa;
-logic[8:0] s4_sub_normalized_exponent;
-logic s4_sub_normalized_guard, s4_sub_normalized_round, s4_sub_normalized_sticky;
-always_comb begin
-    s4_sub_normalized_mantissa_temp = s4_subtraction_result << s4_sub_shift_amount;
-    //extra bit is added to detect underflow
-    s4_sub_normalized_exponent = {1'b0, s4_larger_number_exponent} - {4'b0000, s4_sub_shift_amount};
-
-    s4_sub_normalized_mantissa = s4_sub_normalized_mantissa_temp[26:3];
-    s4_sub_normalized_guard = s4_sub_normalized_mantissa_temp[2];
-    s4_sub_normalized_round = s4_sub_normalized_mantissa_temp[1];
-    s4_sub_normalized_sticky = s4_sub_normalized_mantissa_temp[0] | s4_alignment_sticky_bit;
-end
-
-//forward relevant result
-logic[23:0] s4_normalized_mantissa;
-logic[8:0] s4_normalized_exponent;
-logic s4_normalized_guard, s4_normalized_round, s4_normalized_sticky;
-always_comb begin
-    if(s4_op_is_subtraction) begin
-        s4_normalized_mantissa = s4_sub_normalized_mantissa;
-        s4_normalized_exponent = s4_sub_normalized_exponent;
-        s4_normalized_guard = s4_sub_normalized_guard;
-        s4_normalized_round = s4_sub_normalized_round;
-        s4_normalized_sticky = s4_sub_normalized_sticky;
-    end else begin
-        s4_normalized_mantissa = s4_add_normalized_mantissa;
-        s4_normalized_exponent = s4_add_normalized_exponent;
-        s4_normalized_guard = s4_add_normalized_guard;
-        s4_normalized_round = s4_add_normalized_round;
-        s4_normalized_sticky = s4_add_normalized_sticky;
-    end
-end
-
-//rounding and flush to zero 
 
 endmodule
