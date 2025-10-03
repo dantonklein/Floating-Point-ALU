@@ -42,7 +42,7 @@ class fp_item;
             4'd3: result = 32'hFF800000; //negative infinity
             4'd4: result = 32'h7FC00000 | ($urandom() & 32'h003FFFFF); //QNaN
             4'd5: begin //SNaN
-                result = 32'h7F800000 | $urandom_range(1, 32'h003FFFFF);
+                result = 32'h7F800000 | $urandom_range(1, 32'h001FFFFF);
             end
             4'd6: begin //positive denormalized number
                 result = $urandom_range(1, 32'h007FFFFF);
@@ -66,8 +66,54 @@ class fp_item;
 endclass
 
 module add_sub_tb #(
-    parameter int NUM_TESTS = 1000
+    parameter int NUM_TESTS = 100
 );
 
+    logic clk, rst, valid_data_in;
+    logic [31:0] in1, in2;
+    logic [2:0] rounding_mode;
+    logic [31:0] out;
+    logic overflow, underflow, inexact, invalid_operation;
+    logic valid_data_out;
 
+    fp_addsub_pipeline DUT (.*);
+
+    logic clk = 1'b0;
+    initial begin : generate_clock
+        forever #5 clk <= ~clk;
+    end
+
+    fp_item item;
+    //int passed = 0;
+    //int failed = 0;
+    shortreal expected_out;
+    initial begin
+        item = new;
+        $timeformat(-9, 0, " ns");
+        rst <= 1;
+        valid_data_in <= 0;
+        @(posedge clk);
+        rst <= 0;
+        @(posedge clk);
+
+        for(int i = 0; i < NUM_TESTS; i++) begin
+            assert(item.randomize()) 
+            else $fatal(1, "ERROR: Randomization failed.");
+            @(posedge clk);
+            in1 <= item.in1_bits;
+            in2 <= item.in2_bits;
+            rounding_mode <= item.rounding_mode;
+            valid_data_in <= 1;
+            expected_out = $bitstoshortreal(item.in1_bits) + $bitstoshortreal(item.in2_bits);
+            @(posedge clk);
+            $display("[%0t] Test %0d: in1=0x%08h in1float=%f in2=0x%08h in2float=%f rmode=%0d", $time, i, in1, $bitstoshortreal(in1),in2, $bitstoshortreal(in2),rounding_mode);
+            valid_data_in <= 0;
+            @(posedge valid_data_out);
+            $display("  Result: 0x%08h Float: %f [ovf=%b unf=%b inx=%b inv=%b]", out, $bitstoshortreal(out), overflow, underflow, inexact, invalid_operation);
+            $display("Expected: 0x%08h Float: %f", $shortrealtobits(expected_out), expected_out);
+        end
+
+        $display("Tests completed.");
+        disable generate_clock;
+    end
 endmodule
