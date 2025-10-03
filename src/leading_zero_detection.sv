@@ -35,6 +35,7 @@ always_comb begin
         27'b00000000000000000000000001?: shift_amount = 25;
         27'b000000000000000000000000001: shift_amount = 26;
         27'b000000000000000000000000000: shift_amount = 27;
+        default: shift_amount = 0;
     endcase
 end
 

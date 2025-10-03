@@ -1,2 +1,10 @@
 For adder:
 You need to match the exponents. Find the value that has the smaller exponent and make it match the larger one
+
+
+For RISCV the rounding modes are
+000: Round to Nearest, ties to Even
+001: Round towards Zero
+010: Round down towards -infinity
+011: Round up to positive infinity
+100: Round to nearest, ties to max magnitude
