@@ -1,3 +1,5 @@
+//theres some sort of bug with the rounding idek what it is but it makes the answer 1 wrong sometimes
+
 import fp_pkg::*;
 
 module fp_addsub_pipeline (
@@ -6,7 +8,8 @@ module fp_addsub_pipeline (
     input logic[2:0] rounding_mode,
     output logic[31:0] out,
     output logic overflow, underflow, inexact, invalid_operation,
-    output logic valid_data_out
+    output logic valid_data_out,
+    output logic normalized_mantissa_lsb, normalized_guard, normalized_round, normalized_sticky, round_up
 );
 
 //Stage 1: Denorm, NaN, Zero, Infinity processing
@@ -183,6 +186,9 @@ always_comb begin
     s2_aligned_smaller_mantissa = {1'b1, s2_smaller_mantissa,27'd0} >> s2_shift_amount;
     if(s2_shift_amount) s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[24:0];
     else s2_alignment_sticky_bit = 0;
+
+    //s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[23:0];
+    //s2_alignment_sticky_bit = (| s2_aligned_smaller_mantissa[23:0]) | (s2_shift_amount == 5'd24);
 end
 
 //store stage 2 values
@@ -356,9 +362,9 @@ fp_32b_t s4_rounded_output;
 logic[23:0] s4_rounded_mantissa_temp;
 logic s4_exponent_overflow, s4_exponent_underflow, s4_has_grs_bits;
 logic s4_overflow_exception, s4_inexact_exception, s4_underflow_exception;
+logic s4_round_up;
 
 always_comb begin
-    logic s4_round_up;
     s4_exponent_overflow = s4_normalized_overflow_underflow & !s4_op_is_subtraction;
     s4_exponent_underflow = s4_normalized_overflow_underflow & s4_op_is_subtraction;
     s4_has_grs_bits = s4_normalized_guard | s4_normalized_round | s4_normalized_sticky;
@@ -411,7 +417,10 @@ always_comb begin
     end else begin
         case(s4_rounding_mode)
             RNE: begin
-                s4_round_up = (s4_normalized_guard & (s4_normalized_round | s4_normalized_sticky)) | (s4_normalized_guard & ~s4_normalized_round & ~s4_normalized_sticky & s4_normalized_mantissa[0]);
+                // s4_round_up = (s4_normalized_guard & (s4_normalized_round | s4_normalized_sticky)) | 
+                //(s4_normalized_guard & ~s4_normalized_round & ~s4_normalized_sticky & s4_normalized_mantissa[0]);
+
+                s4_round_up = s4_normalized_guard & (s4_normalized_round | s4_normalized_sticky | s4_normalized_mantissa[0]);
             end
             RTZ: begin
                 s4_round_up = 1'b0;
@@ -458,10 +467,19 @@ always_ff @(posedge clk or posedge rst) begin
         inexact <= 0;
         invalid_operation <= 0;
         valid_data_out <= 0;
+        normalized_mantissa_lsb <= 0;
+        normalized_guard <= 0;
+        normalized_round <= 0;
+        normalized_sticky <= 0;
+        round_up <= 0;
     end else begin
         invalid_operation <= s4_input_is_invalid;
         valid_data_out <= s4_valid_data_in;
-
+        normalized_mantissa_lsb <= s4_normalized_mantissa[0];
+        normalized_guard <= s4_normalized_guard;
+        normalized_round <= s4_normalized_round;
+        normalized_sticky <= s4_normalized_sticky;
+        round_up <= s4_round_up;
         if(s4_special_case) begin
             overflow <= 1'b0;
             underflow <= s4_input_is_flushed;
