@@ -231,12 +231,22 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 //Stage 3: Add/Subtract
-logic[27:0] s3_addition_result;
+logic[26:0] s3_addition_result_sum;
+logic s3_addition_result_carry;
 logic[26:0] s3_subtraction_result;
 logic s3_exact_zero;
+logic [26:0] s3_adder_input1, s3_adder_input2;
+logic [26:0] s3_subtractor_input1, s3_subtractor_input2;
+assign s3_adder_input1 = {1'b1, s3_larger_number.mantissa, 3'b000};
+assign s3_adder_input2 = s3_aligned_smaller_mantissa;
 
-assign s3_addition_result = {2'b01, s3_larger_number.mantissa, 3'b000} + {1'b0, s3_aligned_smaller_mantissa};
-assign s3_subtraction_result = {1'b1, s3_larger_number.mantissa, 3'b000} - s3_aligned_smaller_mantissa;
+KSA_nbits #(.WIDTH(27)) s3_adder (.in1(s3_adder_input1), .in2(s3_adder_input2), .out(s3_addition_result_sum), .cout(s3_addition_result_carry));
+
+assign s3_subtractor_input1 = {1'b1, s3_larger_number.mantissa, 3'b000};
+assign s3_subtractor_input2 = ~s3_aligned_smaller_mantissa + 1'b1;
+
+KSA_nbits #(.WIDTH(27)) s3_subtractor (.in1(s3_subtractor_input1), .in2(s3_subtractor_input2), .out(s3_subtraction_result));
+
 assign s3_exact_zero = s3_op_is_subtraction ? ({1'b1, s3_larger_number.mantissa, 3'b000} == {s3_aligned_smaller_mantissa}) : 1'b0;
 
 //store stage 3 values
@@ -280,7 +290,7 @@ always_ff @(posedge clk or posedge rst) begin
         s4_valid_data_in <= s3_valid_data_in;
         s4_rounding_mode <= s3_rounding_mode;
 
-        s4_addition_result <= s3_addition_result;
+        s4_addition_result <= {s3_addition_result_carry, s3_addition_result_sum};
         s4_subtraction_result <= s3_subtraction_result;
         s4_op_is_subtraction <= s3_op_is_subtraction;
         s4_alignment_sticky_bit <= s3_alignment_sticky_bit;
@@ -328,9 +338,17 @@ always_comb begin
     //extra bit is added to detect underflow
     s4_sub_normalized_exponent = {1'b0, s4_larger_number_exponent} - {4'b0000, s4_sub_shift_amount};
 
+
+    //for calculating the sticky bit when bits are shifted left
+    // logic [25:0] s4_left_shifted;
+	// logic [25:0] s4_mask;
+	// s4_left_mask = (26'h3FFFFFF >> (26 - s4_sub_shift_amount));
+    // s4_shifted = s4_subtraction_result & s4_mask;
+
     s4_sub_normalized_mantissa = s4_sub_normalized_mantissa_temp[25:3];
     s4_sub_normalized_guard = s4_sub_normalized_mantissa_temp[2];
     s4_sub_normalized_round = s4_sub_normalized_mantissa_temp[1];
+    //s4_sub_normalized_sticky = | s4_shifted | s4_sub_normalized_mantissa_temp[0] | s4_alignment_sticky_bit;
     s4_sub_normalized_sticky = s4_sub_normalized_mantissa_temp[0] | s4_alignment_sticky_bit;
 end
 

@@ -8,3 +8,13 @@ For RISCV the rounding modes are
 010: Round down towards -infinity
 011: Round up to positive infinity
 100: Round to nearest, ties to max magnitude
+
+to do: 
+multiplier
+fused add/multiply
+division
+square root
+exponentiation
+logarithm
+max/min
+reciprocal

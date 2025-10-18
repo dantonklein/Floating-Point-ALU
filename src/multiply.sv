@@ -113,6 +113,39 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 
+logic[8:0] s2_exponent_add; //extra bit to account for overflow
+assign s2_exponent_add = s2_in1.exponent + s2_in2.exponent + 8'd127;
 
+logic s2_sign_bit;
+assign s2_sign_bit = s2_in1.sign ^ s2_in2.sign;
+
+logic[23:0] s2_multiplier_in1, s2_multiplier_in2;
+assign s2_multiplier_in1 = {1'b1, s2_in1.mantissa};
+assign s2_multiplier_in2 = {1'b1, s2_in2.mantissa};
+
+fp_32b_t s3_special_result;
+logic s3_input_is_invalid;
+logic s3_input_is_flushed;
+logic s3_special_case;
+logic[2:0] s3_rounding_mode;
+
+logic[8:0] s3_exponent_add;
+logic s3_sign_bit;
+
+
+
+fp_32b_t s4_special_result;
+logic s4_input_is_invalid;
+logic s4_input_is_flushed;
+logic s4_special_case;
+logic[2:0] s4_rounding_mode;
+
+logic s4_sign_bit;
+logic[8:0] s4_exponent_add;
+logic[47:0] s4_multiplier_out;
+logic s4_valid_data_in;
+
+Dadda_Multiplier_24bit_pipelined s2_4_multiplier(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), 
+.in1(s2_multiplier_in1), .in2(s2_multiplier_in2), .out(s4_multiplier_out), .valid_data_out(s4_valid_data_in));
 
 endmodule
