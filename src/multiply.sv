@@ -92,6 +92,7 @@ always_ff @(posedge clk or posedge rst) begin
         //when both infinity
         end else if((s1_in1_isinfinite & s1_in2_iszero) | (s1_in1_iszero & s1_in2_isinfinite)) begin
             //propagate qnan, exception flag is raised 
+            s2_special_case <= 1;
             s2_special_result <= 32'h7FC00000;
 
         //infinite input + non-infinite, infinity gets propagated
@@ -272,23 +273,23 @@ always_ff @(posedge clk or posedge rst) begin
         end else if(s4_exponent_overflow) begin
             overflow <= 1'b1;
             underflow <= 1'b0;
-            inexact <= s4_has_grs_bits;
+            inexact <= s4_input_is_flushed | s4_has_grs_bits;
             case(s4_rounding_mode)
                 RTZ: begin
                     out = {s4_sign_bit, 8'hFE, 23'h7FFFFF};
                 end
                 RDN: begin
                     if(s4_sign_bit) begin
-                        out <= {s4_sign_bit, 8'hFE, 23'h7FFFFF};
+                        out <= {1'b1, 8'hFF, 23'h0};
                     end else begin
-                        out <= {s4_sign_bit, 8'hFF, 23'h0};
+                        out <= {1'b0, 8'hFE, 23'h7FFFFF};
                     end
                 end
                 RUP: begin
                     if(s4_sign_bit) begin
-                        out <= {s4_sign_bit, 8'hFF, 23'h0};
+                        out <= {1'b1, 8'hFE, 23'h7FFFFF};
                     end else begin
-                        out <= {s4_sign_bit, 8'hFE, 23'h7FFFFF};
+                        out <= {1'b0, 8'hFF, 23'h0};
                     end
                 end
                 default: begin
@@ -297,13 +298,17 @@ always_ff @(posedge clk or posedge rst) begin
             endcase
         end else if(s4_exponent_underflow) begin
             overflow <= 1'b0;
-            underflow <= s4_input_is_flushed | s4_has_grs_bits;
-            inexact <= s4_has_grs_bits;
-            out <= {s4_sign_bit, 8'h0, 23'h0};
+            underflow <= s4_has_grs_bits;
+            inexact <= s4_input_is_flushed | s4_has_grs_bits;
+            if(s4_rounding_mode == RDN) begin
+                out <= {1'b1, 8'h0, 23'h0};
+            end else begin
+                out <= {s4_sign_bit, 8'h0, 23'h0};
+            end
         end else begin
             overflow <= 1'b0;
             underflow <= 1'b0;
-            inexact <= s4_has_grs_bits;
+            inexact <= s4_input_is_flushed | s4_has_grs_bits;
             out <= {s4_sign_bit, s4_rounded_exponent[7:0],  s4_rounded_mantissa};
         end
     end
