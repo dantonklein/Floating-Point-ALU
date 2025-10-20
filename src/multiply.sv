@@ -113,8 +113,8 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 
-logic[8:0] s2_exponent_add; //extra bit to account for overflow
-assign s2_exponent_add = s2_in1.exponent + s2_in2.exponent + 8'd127;
+logic signed[9:0] s2_exponent_add; //extra bit to account for overflow
+assign s2_exponent_add = $signed({1'b0, s2_in1.exponent}) + $signed({1'b0, s2_in2.exponent}) - 10'sd127;
 
 logic s2_sign_bit;
 assign s2_sign_bit = s2_in1.sign ^ s2_in2.sign;
@@ -129,10 +129,8 @@ logic s3_input_is_flushed;
 logic s3_special_case;
 logic[2:0] s3_rounding_mode;
 
-logic[8:0] s3_exponent_add;
+logic signed[9:0] s3_exponent_add;
 logic s3_sign_bit;
-
-
 
 fp_32b_t s4_special_result;
 logic s4_input_is_invalid;
@@ -141,11 +139,114 @@ logic s4_special_case;
 logic[2:0] s4_rounding_mode;
 
 logic s4_sign_bit;
-logic[8:0] s4_exponent_add;
+logic signed[9:0] s4_exponent_add;
 logic[47:0] s4_multiplier_out;
 logic s4_valid_data_in;
+
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s3_special_result <= 0;
+        s3_input_is_invalid <= 0;
+        s3_input_is_flushed <= 0;
+        s3_special_case <= 0;
+        s3_rounding_mode <= 0;
+
+        s3_exponent_add <= 0;
+        s3_sign_bit <= 0;
+
+        s4_special_result <= 0;
+        s4_input_is_invalid <= 0;
+        s4_input_is_flushed <= 0;
+        s4_special_case <= 0;
+        s4_rounding_mode <= 0;
+
+        s4_sign_bit <= 0;
+        s4_exponent_add <= 0;
+    end else begin
+        s3_special_result <= s2_special_result;
+        s3_input_is_invalid <= s2_input_is_invalid;
+        s3_input_is_flushed <= s2_input_is_flushed;
+        s3_special_case <= s2_special_case;
+        s3_rounding_mode <= rounding_mode;
+
+        s3_exponent_add <= s2_exponent_add;
+        s3_sign_bit <= s2_sign_bit;
+
+        s4_special_result <= s3_special_result;
+        s4_input_is_invalid <= s3_input_is_invalid;
+        s4_input_is_flushed <= s3_input_is_flushed;
+        s4_special_case <= s3_special_case;
+        s4_rounding_mode <= s3_rounding_mode;
+
+        s4_exponent_add <= s3_exponent_add;
+        s4_sign_bit <= s3_sign_bit;
+    end
+end
 
 Dadda_Multiplier_24bit_pipelined s2_4_multiplier(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), 
 .in1(s2_multiplier_in1), .in2(s2_multiplier_in2), .out(s4_multiplier_out), .valid_data_out(s4_valid_data_in));
 
+//handle shifting
+logic[22:0] s4_normalized_mantissa;
+logic[9:0] s4_normalized_exponent;
+logic s4_guard, s4_round, s4_sticky;
+always_comb begin
+    if(s4_multiplier_out[47]) begin
+        s4_mantissa = s4_multiplier_out[46:24];
+        s4_guard = s4_multiplier_out[23];
+        s4_round = s4_multiplier_out[22];
+        s4_sticky = | s4_multiplier_out[21:0];
+        s4_normalized_exponent = s4_exponent_add + 10'sd1;
+    end else begin
+        s4_mantissa = s4_multiplier_out[45:23];
+        s4_guard = s4_multiplier_out[22];
+        s4_round = s4_multiplier_out[21];
+        s4_sticky = | s4_multiplier_out[20:0];
+        s4_normalized_exponent = s4_exponent_add;
+    end
+end
+
+//rounding and flush to zero
+fp_32b_t s4_rounded_output;
+logic s4_round_up;
+logic s4_exponent_overflow, s4_exponent_underflow, s4_has_grs_bits;
+logic s4_overflow_exception, s4_inexact_exception, s4_underflow_exception;
+logic[23:0] s4_rounded_mantissa_temp;
+logic[22:0] s4_rounded_mantissa;
+logic signed[9:0] s4_rounded_exponent;
+always_comb begin
+    s4_has_grs_bits = s4_guard | s4_round | s4_sticky;
+    case(s4_rounding_mode) 
+        RNE: begin
+            s4_round_up = s4_guard & (s4_round | s4_sticky | s4_mantissa[0]);
+        end
+        RTZ: begin
+            s4_round_up = 1'b0;
+        end
+        RDN: begin
+            s4_round_up = s4_sign_bit & (s4_guard | s4_round | s4_sticky);
+        end
+        RUP: begin
+            s4_round_up = ~s4_sign_bit & (s4_guard | s4_round | s4_sticky);
+        end
+        RMM: begin
+            s4_round_up = s4_guard;
+        end
+        default: begin
+            s4_round_up = 1'b0;
+        end
+    endcase
+
+    s4_rounded_mantissa_temp = {1'b0, s4_normalized_mantissa} + s4_round_up;
+
+    if(s4_rounded_mantissa_temp[23]) begin
+        s4_rounded_mantissa = 23'd0;
+        s4_rounded_exponent = s4_normalized_exponent + 10'sd1;
+    end else begin
+        s4_rounded_mantissa = s4_rounded_mantissa_temp[22:0];
+        s4_rounded_exponent = s4_normalized_exponent;
+    end
+
+end
 endmodule
