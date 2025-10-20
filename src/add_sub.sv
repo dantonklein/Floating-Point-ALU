@@ -376,6 +376,8 @@ always_comb begin
 end
 
 //rounding and flush to zero 
+
+//fix this by handling exponent overflow/underflow after rounding
 fp_32b_t s4_rounded_output;
 logic[23:0] s4_rounded_mantissa_temp;
 logic s4_exponent_overflow, s4_exponent_underflow, s4_has_grs_bits;

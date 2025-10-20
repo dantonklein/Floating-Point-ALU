@@ -193,13 +193,13 @@ logic[9:0] s4_normalized_exponent;
 logic s4_guard, s4_round, s4_sticky;
 always_comb begin
     if(s4_multiplier_out[47]) begin
-        s4_mantissa = s4_multiplier_out[46:24];
+        s4_normalized_mantissa = s4_multiplier_out[46:24];
         s4_guard = s4_multiplier_out[23];
         s4_round = s4_multiplier_out[22];
         s4_sticky = | s4_multiplier_out[21:0];
         s4_normalized_exponent = s4_exponent_add + 10'sd1;
     end else begin
-        s4_mantissa = s4_multiplier_out[45:23];
+        s4_normalized_mantissa = s4_multiplier_out[45:23];
         s4_guard = s4_multiplier_out[22];
         s4_round = s4_multiplier_out[21];
         s4_sticky = | s4_multiplier_out[20:0];
@@ -216,10 +216,9 @@ logic[23:0] s4_rounded_mantissa_temp;
 logic[22:0] s4_rounded_mantissa;
 logic signed[9:0] s4_rounded_exponent;
 always_comb begin
-    s4_has_grs_bits = s4_guard | s4_round | s4_sticky;
     case(s4_rounding_mode) 
         RNE: begin
-            s4_round_up = s4_guard & (s4_round | s4_sticky | s4_mantissa[0]);
+            s4_round_up = s4_guard & (s4_round | s4_sticky | s4_normalized_mantissa[0]);
         end
         RTZ: begin
             s4_round_up = 1'b0;
@@ -248,5 +247,65 @@ always_comb begin
         s4_rounded_exponent = s4_normalized_exponent;
     end
 
+
+    s4_exponent_overflow = (s4_rounded_exponent > 10'sd254);
+    s4_exponent_underflow = (s4_rounded_exponent <= 10'sd0);
+    s4_has_grs_bits = s4_guard | s4_round | s4_sticky;
+end
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        out <= '0;
+        overflow <= 0;
+        underflow <= 0;
+        inexact <= 0;
+        invalid_operation <= 0;
+        valid_data_out <= 0;
+    end else begin
+        invalid_operation <= s4_input_is_invalid;
+        valid_data_out <= s4_valid_data_in;
+        if(s4_special_case) begin
+            overflow <= 1'b0;
+            inexact <= 1'b0;
+            underflow <= s4_input_is_flushed;
+            out <= s4_special_result;
+        end else if(s4_exponent_overflow) begin
+            overflow <= 1'b1;
+            underflow <= 1'b0;
+            inexact <= s4_has_grs_bits;
+            case(s4_rounding_mode)
+                RTZ: begin
+                    out = {s4_sign_bit, 8'hFE, 23'h7FFFFF};
+                end
+                RDN: begin
+                    if(s4_sign_bit) begin
+                        out <= {s4_sign_bit, 8'hFE, 23'h7FFFFF};
+                    end else begin
+                        out <= {s4_sign_bit, 8'hFF, 23'h0};
+                    end
+                end
+                RUP: begin
+                    if(s4_sign_bit) begin
+                        out <= {s4_sign_bit, 8'hFF, 23'h0};
+                    end else begin
+                        out <= {s4_sign_bit, 8'hFE, 23'h7FFFFF};
+                    end
+                end
+                default: begin
+                    out <= {s4_sign_bit, 8'hFF, 23'h0};
+                end
+            endcase
+        end else if(s4_exponent_underflow) begin
+            overflow <= 1'b0;
+            underflow <= s4_input_is_flushed | s4_has_grs_bits;
+            inexact <= s4_has_grs_bits;
+            out <= {s4_sign_bit, 8'h0, 23'h0};
+        end else begin
+            overflow <= 1'b0;
+            underflow <= 1'b0;
+            inexact <= s4_has_grs_bits;
+            out <= {s4_sign_bit, s4_rounded_exponent[7:0],  s4_rounded_mantissa};
+        end
+    end
 end
 endmodule
