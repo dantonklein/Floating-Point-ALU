@@ -45,7 +45,7 @@ end
 //flush to zero and invalid input handling
 logic s1_input_is_invalid;
 logic s1_input_is_flushed;
-assign s1_input_is_invalid = s1_in1_issnan | s1_in2_issnan | (s1_in1_isinfinite & s1_in2_isinfinite & (s1_in1_isinfinite ^ s1_in2_isinfinite));
+assign s1_input_is_invalid = s1_in1_issnan | s1_in2_issnan | (s1_in1_isinfinite & s1_in2_isinfinite & (s1_in1_init.sign ^ s1_in2_isinfinite));
 assign s1_input_is_flushed = s1_in1_isdenorm | s1_in2_isdenorm;
 
 
@@ -365,7 +365,6 @@ always_comb begin
 end
 
 //rounding and flush to zero 
-fp_32b_t s4_rounded_output;
 logic[23:0] s4_rounded_mantissa_temp;
 logic[22:0] s4_rounded_mantissa;
 logic [8:0] s4_rounded_exponent;
@@ -446,7 +445,7 @@ always_ff @(posedge clk or posedge rst) begin
         end else if(s4_exponent_overflow) begin
             overflow <= 1'b1;
             underflow <= 1'b0;
-            inexact <= s4_input_is_flushed | s4_has_grs_bits;
+            inexact <= 1'b1;
             case(s4_rounding_mode)
                 RTZ: begin
                     out = {s4_larger_number_sign, 8'hFE, 23'h7FFFFF};
@@ -472,7 +471,7 @@ always_ff @(posedge clk or posedge rst) begin
         end else if(s4_exponent_underflow) begin
             overflow <= 1'b0;
             underflow <= s4_has_grs_bits;
-            inexact <= s4_input_is_flushed | s4_has_grs_bits;
+            inexact <= 1'b1;
             if(s4_rounding_mode == RDN) begin
                 out <= {1'b1, 8'h0, 23'h0};
             end else begin
@@ -481,8 +480,8 @@ always_ff @(posedge clk or posedge rst) begin
         end else begin
             overflow <= 1'b0;
             underflow <= 1'b0;
-            inexact <= s4_input_is_flushed | s4_has_grs_bits;
-            out <= s4_rounded_output;
+            inexact <= s4_has_grs_bits;
+            out <= {s4_larger_number_sign, s4_rounded_exponent[7:0], s4_rounded_mantissa};
         end
     end
 end
