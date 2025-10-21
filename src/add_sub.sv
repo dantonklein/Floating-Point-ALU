@@ -45,7 +45,7 @@ end
 //flush to zero and invalid input handling
 logic s1_input_is_invalid;
 logic s1_input_is_flushed;
-assign s1_input_is_invalid = s1_in1_issnan | s1_in2_issnan | (s1_in1_isinfinite & s1_in2_isinfinite & (s1_in1_init.sign ^ s1_in2_isinfinite));
+assign s1_input_is_invalid = s1_in1_issnan | s1_in2_issnan | (s1_in1_isinfinite & s1_in2_isinfinite & (s1_in1_init.sign ^ s1_in2_init.sign));
 assign s1_input_is_flushed = s1_in1_isdenorm | s1_in2_isdenorm;
 
 
@@ -184,7 +184,7 @@ always_comb begin
     end
     //allign smaller number's exponent
     s2_aligned_smaller_mantissa = {1'b1, s2_smaller_mantissa,27'd0} >> s2_shift_amount;
-    if(s2_shift_amount) s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[24:0];
+    if(s2_shift_amount) s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[23:0];
     else s2_alignment_sticky_bit = 0;
 
     //s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[23:0];
@@ -471,7 +471,7 @@ always_ff @(posedge clk or posedge rst) begin
         end else if(s4_exponent_underflow) begin
             overflow <= 1'b0;
             underflow <= s4_has_grs_bits;
-            inexact <= 1'b1;
+            inexact <= s4_has_grs_bits;
             if(s4_rounding_mode == RDN) begin
                 out <= {1'b1, 8'h0, 23'h0};
             end else begin
