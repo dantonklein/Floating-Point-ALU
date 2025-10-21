@@ -93,7 +93,7 @@ always_ff @(posedge clk or posedge rst) begin
         end else if((s1_in1_isinfinite & s1_in2_iszero) | (s1_in1_iszero & s1_in2_isinfinite)) begin
             //propagate qnan, exception flag is raised 
             s2_special_case <= 1;
-            s2_special_result <= 32'h7FC00000;
+            s2_special_result <= {s1_in1_init.sign ^ s1_in2_init.sign,31'h7FC00000};
 
         //infinite input + non-infinite, infinity gets propagated
         end else if(s1_in1_isinfinite | s1_in2_isinfinite) begin
@@ -209,10 +209,8 @@ always_comb begin
 end
 
 //rounding and flush to zero
-fp_32b_t s4_rounded_output;
 logic s4_round_up;
 logic s4_exponent_overflow, s4_exponent_underflow, s4_has_grs_bits;
-logic s4_overflow_exception, s4_inexact_exception, s4_underflow_exception;
 logic[23:0] s4_rounded_mantissa_temp;
 logic[22:0] s4_rounded_mantissa;
 logic signed[9:0] s4_rounded_exponent;

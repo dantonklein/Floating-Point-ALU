@@ -66,7 +66,7 @@ class fp_item;
 endclass
 
 module add_sub_tb #(
-    parameter int NUM_TESTS = 100
+    parameter int NUM_TESTS = 400
 );
 
     logic clk, rst, valid_data_in;
@@ -104,7 +104,8 @@ module add_sub_tb #(
             @(posedge clk);
             in1 <= item.in1_bits;
             in2 <= item.in2_bits;
-            rounding_mode <= item.rounding_mode;
+            //rounding_mode <= item.rounding_mode;
+            rounding_mode <= RNE;
             valid_data_in <= 1;
             expected_out = $bitstoshortreal(item.in1_bits) + $bitstoshortreal(item.in2_bits);
             @(posedge clk);

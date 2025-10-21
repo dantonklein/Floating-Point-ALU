@@ -8,8 +8,8 @@ module fp_addsub_pipeline (
     input logic[2:0] rounding_mode,
     output logic[31:0] out,
     output logic overflow, underflow, inexact, invalid_operation,
-    output logic valid_data_out,
-    output logic normalized_mantissa_lsb, normalized_guard, normalized_round, normalized_sticky, round_up
+    output logic valid_data_out//,
+    //output logic normalized_mantissa_lsb, normalized_guard, normalized_round, normalized_sticky, round_up
 );
 
 //Stage 1: Denorm, NaN, Zero, Infinity processing
@@ -338,37 +338,26 @@ always_comb begin
     //extra bit is added to detect underflow
     s4_sub_normalized_exponent = {1'b0, s4_larger_number_exponent} - {4'b0000, s4_sub_shift_amount};
 
-
-    //for calculating the sticky bit when bits are shifted left
-    // logic [25:0] s4_left_shifted;
-	// logic [25:0] s4_mask;
-	// s4_left_mask = (26'h3FFFFFF >> (26 - s4_sub_shift_amount));
-    // s4_shifted = s4_subtraction_result & s4_mask;
-
     s4_sub_normalized_mantissa = s4_sub_normalized_mantissa_temp[25:3];
     s4_sub_normalized_guard = s4_sub_normalized_mantissa_temp[2];
     s4_sub_normalized_round = s4_sub_normalized_mantissa_temp[1];
-    //s4_sub_normalized_sticky = | s4_shifted | s4_sub_normalized_mantissa_temp[0] | s4_alignment_sticky_bit;
     s4_sub_normalized_sticky = s4_sub_normalized_mantissa_temp[0] | s4_alignment_sticky_bit;
 end
 
 //forward relevant result
 logic[22:0] s4_normalized_mantissa;
-logic[7:0] s4_normalized_exponent;
-logic s4_normalized_overflow_underflow;
+logic[8:0] s4_normalized_exponent;
 logic s4_normalized_guard, s4_normalized_round, s4_normalized_sticky;
 always_comb begin
     if(s4_op_is_subtraction) begin
         s4_normalized_mantissa = s4_sub_normalized_mantissa;
-        s4_normalized_exponent = s4_sub_normalized_exponent[7:0];
-        s4_normalized_overflow_underflow = s4_sub_normalized_exponent[8];
+        s4_normalized_exponent = s4_sub_normalized_exponent;
         s4_normalized_guard = s4_sub_normalized_guard;
         s4_normalized_round = s4_sub_normalized_round;
         s4_normalized_sticky = s4_sub_normalized_sticky;
     end else begin
         s4_normalized_mantissa = s4_add_normalized_mantissa;
-        s4_normalized_exponent = s4_add_normalized_exponent[7:0];
-        s4_normalized_overflow_underflow = s4_add_normalized_exponent[8];
+        s4_normalized_exponent = s4_add_normalized_exponent;
         s4_normalized_guard = s4_add_normalized_guard;
         s4_normalized_round = s4_add_normalized_round;
         s4_normalized_sticky = s4_add_normalized_sticky;
@@ -376,106 +365,49 @@ always_comb begin
 end
 
 //rounding and flush to zero 
-
-//fix this by handling exponent overflow/underflow after rounding
 fp_32b_t s4_rounded_output;
 logic[23:0] s4_rounded_mantissa_temp;
+logic[22:0] s4_rounded_mantissa;
+logic [8:0] s4_rounded_exponent;
 logic s4_exponent_overflow, s4_exponent_underflow, s4_has_grs_bits;
-logic s4_overflow_exception, s4_inexact_exception, s4_underflow_exception;
 logic s4_round_up;
 
 always_comb begin
-    s4_exponent_overflow = s4_normalized_overflow_underflow & !s4_op_is_subtraction;
-    s4_exponent_underflow = s4_normalized_overflow_underflow & s4_op_is_subtraction;
-    s4_has_grs_bits = s4_normalized_guard | s4_normalized_round | s4_normalized_sticky;
-
-    //rounding logic
-
-    //default logic
-    s4_overflow_exception = 0;
-    s4_underflow_exception = 0;
-    s4_round_up = 1'b0;
-    if(s4_exponent_underflow) begin
-        s4_rounded_output.exponent = '0;
-        s4_rounded_output.mantissa = '0;
-        s4_underflow_exception = s4_has_grs_bits;
-
-    end else if (s4_exponent_overflow) begin
-        s4_overflow_exception = 1'b1;
-        case(s4_rounding_mode) 
-            RNE, RMM: begin
-                s4_rounded_output.mantissa = '0;
-                s4_rounded_output.exponent = '1;
-            end
-            RTZ: begin
-                s4_rounded_output.mantissa = '1;
-                s4_rounded_output.exponent = 8'b11111110;
-            end
-            RDN: begin
-                if(s4_larger_number_sign) begin
-                    s4_rounded_output.mantissa = '0;
-                    s4_rounded_output.exponent = '1;
-                end else begin
-                    s4_rounded_output.mantissa = '1;
-                    s4_rounded_output.exponent = 8'b11111110;
-                end
-            end
-            RUP: begin
-                if(s4_larger_number_sign) begin
-                    s4_rounded_output.mantissa = '1;
-                    s4_rounded_output.exponent = 8'b11111110;
-                end else begin
-                    s4_rounded_output.mantissa = '0;
-                    s4_rounded_output.exponent = '1;
-                end
-            end
-            default: begin
-                s4_rounded_output.mantissa = '0;
-                s4_rounded_output.exponent = '1;
-            end
-        endcase
-    end else begin
-        case(s4_rounding_mode)
-            RNE: begin
-                // s4_round_up = (s4_normalized_guard & (s4_normalized_round | s4_normalized_sticky)) | 
-                //(s4_normalized_guard & ~s4_normalized_round & ~s4_normalized_sticky & s4_normalized_mantissa[0]);
-
-                s4_round_up = s4_normalized_guard & (s4_normalized_round | s4_normalized_sticky | s4_normalized_mantissa[0]);
-            end
-            RTZ: begin
-                s4_round_up = 1'b0;
-            end
-            RDN: begin
-                s4_round_up = s4_larger_number_sign & (s4_normalized_guard | s4_normalized_round | s4_normalized_sticky);
-            end
-            RUP: begin
-                s4_round_up = ~s4_larger_number_sign & (s4_normalized_guard | s4_normalized_round | s4_normalized_sticky);
-            end
-            RMM: begin
-                s4_round_up = s4_normalized_guard;
-            end
-            default: begin
-                s4_round_up = 1'b0;
-            end
-        endcase
-    end
+    case(s4_rounding_mode)
+        RNE: begin
+            s4_round_up = s4_normalized_guard & (s4_normalized_round | s4_normalized_sticky | s4_normalized_mantissa[0]);
+        end
+        RTZ: begin
+            s4_round_up = 1'b0;
+        end
+        RDN: begin
+            s4_round_up = s4_larger_number_sign & (s4_normalized_guard | s4_normalized_round | s4_normalized_sticky);
+        end
+        RUP: begin
+            s4_round_up = ~s4_larger_number_sign & (s4_normalized_guard | s4_normalized_round | s4_normalized_sticky);
+        end
+        RMM: begin
+            s4_round_up = s4_normalized_guard;
+        end
+        default: begin
+            s4_round_up = 1'b0;
+        end
+    endcase
 
     s4_rounded_mantissa_temp = {1'b0, s4_normalized_mantissa} + s4_round_up;
 
     if(s4_rounded_mantissa_temp[23]) begin
-        s4_rounded_output.mantissa = '0;
-        if(s4_normalized_exponent == 8'd254) begin
-            s4_rounded_output.exponent = '1;
-            s4_overflow_exception = 1'b1;
-        end else begin
-            s4_rounded_output.exponent = s4_normalized_exponent + 1;
-        end
+        s4_rounded_mantissa = '0;
+        s4_rounded_exponent = s4_normalized_exponent + 9'd1;
     end else begin
-        s4_rounded_output.exponent = s4_normalized_exponent;
-        s4_rounded_output.mantissa = s4_rounded_mantissa_temp[22:0];
+        s4_rounded_mantissa = s4_rounded_mantissa_temp[22:0];
+        s4_rounded_exponent = s4_normalized_exponent;
     end
-    s4_rounded_output.sign = s4_larger_number_sign;
-    s4_inexact_exception = s4_has_grs_bits;
+
+    s4_exponent_overflow = (s4_rounded_exponent > 9'd254) & !s4_op_is_subtraction;
+    s4_exponent_underflow = ((s4_rounded_exponent == 0) | s4_rounded_exponent[8]) & s4_op_is_subtraction;
+    s4_has_grs_bits = s4_normalized_guard | s4_normalized_round | s4_normalized_sticky;
+
 end
 
 //propagate final values to output
@@ -487,23 +419,23 @@ always_ff @(posedge clk or posedge rst) begin
         inexact <= 0;
         invalid_operation <= 0;
         valid_data_out <= 0;
-        normalized_mantissa_lsb <= 0;
-        normalized_guard <= 0;
-        normalized_round <= 0;
-        normalized_sticky <= 0;
-        round_up <= 0;
+        // normalized_mantissa_lsb <= 0;
+        // normalized_guard <= 0;
+        // normalized_round <= 0;
+        // normalized_sticky <= 0;
+        // round_up <= 0;
     end else begin
         invalid_operation <= s4_input_is_invalid;
         valid_data_out <= s4_valid_data_in;
-        normalized_mantissa_lsb <= s4_normalized_mantissa[0];
-        normalized_guard <= s4_normalized_guard;
-        normalized_round <= s4_normalized_round;
-        normalized_sticky <= s4_normalized_sticky;
-        round_up <= s4_round_up;
+        // normalized_mantissa_lsb <= s4_normalized_mantissa[0];
+        // normalized_guard <= s4_normalized_guard;
+        // normalized_round <= s4_normalized_round;
+        // normalized_sticky <= s4_normalized_sticky;
+        // round_up <= s4_round_up;
         if(s4_special_case) begin
             overflow <= 1'b0;
-            underflow <= s4_input_is_flushed;
             inexact <= 1'b0;
+            underflow <= s4_input_is_flushed;
             out <= s4_special_result;
         end else if(s4_exact_zero) begin
             overflow <= 1'b0;
@@ -511,10 +443,45 @@ always_ff @(posedge clk or posedge rst) begin
             inexact <= 1'b0;
             if(s4_rounding_mode == RDN) out <= {1'b1, 31'b0};
             else out <= 32'b0;
+        end else if(s4_exponent_overflow) begin
+            overflow <= 1'b1;
+            underflow <= 1'b0;
+            inexact <= s4_input_is_flushed | s4_has_grs_bits;
+            case(s4_rounding_mode)
+                RTZ: begin
+                    out = {s4_larger_number_sign, 8'hFE, 23'h7FFFFF};
+                end
+                RDN: begin
+                    if(s4_larger_number_sign) begin
+                        out <= {1'b1, 8'hFF, 23'h0};
+                    end else begin
+                        out <= {1'b0, 8'hFE, 23'h7FFFFF};
+                    end
+                end
+                RUP: begin
+                    if(s4_larger_number_sign) begin
+                        out <= {1'b1, 8'hFE, 23'h7FFFFF};
+                    end else begin
+                        out <= {1'b0, 8'hFF, 23'h0};
+                    end
+                end
+                default: begin
+                    out <= {s4_larger_number_sign, 8'hFF, 23'h0};
+                end
+            endcase
+        end else if(s4_exponent_underflow) begin
+            overflow <= 1'b0;
+            underflow <= s4_has_grs_bits;
+            inexact <= s4_input_is_flushed | s4_has_grs_bits;
+            if(s4_rounding_mode == RDN) begin
+                out <= {1'b1, 8'h0, 23'h0};
+            end else begin
+                out <= {s4_larger_number_sign, 8'h0, 23'h0};
+            end
         end else begin
-            overflow <= s4_overflow_exception;
-            underflow <= s4_input_is_flushed | s4_underflow_exception;
-            inexact <= s4_inexact_exception;
+            overflow <= 1'b0;
+            underflow <= 1'b0;
+            inexact <= s4_input_is_flushed | s4_has_grs_bits;
             out <= s4_rounded_output;
         end
     end
