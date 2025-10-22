@@ -209,7 +209,6 @@ always_comb begin
 end
 
 //rounding and flush to zero
-logic s4_round_up;
 logic s4_exponent_overflow, s4_exponent_underflow, s4_has_grs_bits;
 logic[23:0] s4_rounded_mantissa_temp;
 logic[22:0] s4_rounded_mantissa;

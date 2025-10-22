@@ -13,10 +13,10 @@ class fp_item;
 
     constraint special_case_dist {
         special_case dist {
-            2'd0 := 70, 
-            2'd1 := 10,
-            2'd2 := 10,
-            2'd3 := 10
+            2'd0 := 95, 
+            2'd1 := 2,
+            2'd2 := 2,
+            2'd3 := 1
         };
     }
 

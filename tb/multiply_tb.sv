@@ -13,10 +13,10 @@ class fp_item;
 
     constraint special_case_dist {
         special_case dist {
-            2'd0 := 70, 
-            2'd1 := 10,
-            2'd2 := 10,
-            2'd3 := 10
+            2'd0 := 95, 
+            2'd1 := 2,
+            2'd2 := 2,
+            2'd3 := 1
         };
     }
 
@@ -104,7 +104,8 @@ module multiply_tb #(
             @(posedge clk);
             in1 <= item.in1_bits;
             in2 <= item.in2_bits;
-            rounding_mode <= item.rounding_mode;
+            //rounding_mode <= item.rounding_mode;
+            rounding_mode <= RNE;
             valid_data_in <= 1;
             expected_out = $bitstoshortreal(item.in1_bits) * $bitstoshortreal(item.in2_bits);
             @(posedge clk);

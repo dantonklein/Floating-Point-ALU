@@ -3,7 +3,7 @@ module mantissa_reciprocal_24bit_LUT (
     input logic[7:0] in,
     output logic[23:0] out
 );
-    logic[23:0] LUT[256];
+    logic[23:0] lut[256];
 
     initial begin
         $readmemh("reciprocal_lut256.mem", lut);
