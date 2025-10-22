@@ -369,32 +369,9 @@ logic[23:0] s4_rounded_mantissa_temp;
 logic[22:0] s4_rounded_mantissa;
 logic [8:0] s4_rounded_exponent;
 logic s4_exponent_overflow, s4_exponent_underflow, s4_has_grs_bits;
-logic s4_round_up;
-
+floating_point_rounder rounder(.mantissa(s4_normalized_mantissa), .guard(s4_normalized_guard), .round(s4_normalized_round), .sticky(s4_normalized_sticky),
+.sign(s4_larger_number_sign), .rounding_mode(s4_rounding_mode), .rounded_mantissa_pre_overflow_detection(s4_rounded_mantissa_temp));
 always_comb begin
-    case(s4_rounding_mode)
-        RNE: begin
-            s4_round_up = s4_normalized_guard & (s4_normalized_round | s4_normalized_sticky | s4_normalized_mantissa[0]);
-        end
-        RTZ: begin
-            s4_round_up = 1'b0;
-        end
-        RDN: begin
-            s4_round_up = s4_larger_number_sign & (s4_normalized_guard | s4_normalized_round | s4_normalized_sticky);
-        end
-        RUP: begin
-            s4_round_up = ~s4_larger_number_sign & (s4_normalized_guard | s4_normalized_round | s4_normalized_sticky);
-        end
-        RMM: begin
-            s4_round_up = s4_normalized_guard;
-        end
-        default: begin
-            s4_round_up = 1'b0;
-        end
-    endcase
-
-    s4_rounded_mantissa_temp = {1'b0, s4_normalized_mantissa} + s4_round_up;
-
     if(s4_rounded_mantissa_temp[23]) begin
         s4_rounded_mantissa = '0;
         s4_rounded_exponent = s4_normalized_exponent + 9'd1;
