@@ -3,7 +3,7 @@ import fp_pkg::*;
 module floating_point_rounder (
     input logic[22:0] mantissa,
     input logic guard, round, sticky, sign,
-    input logic rounding_mode,
+    input logic[2:0] rounding_mode,
     output logic[23:0] rounded_mantissa_pre_overflow_detection
 );
     logic[23:0] mantissa_plus_one;
