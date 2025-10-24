@@ -125,6 +125,7 @@ assign s2_multiplier_in1 = {1'b1, s2_in1.mantissa};
 assign s2_multiplier_in2 = {1'b1, s2_in2.mantissa};
 
 fp_32b_t s3_special_result;
+logic s3_valid_data_in;
 logic s3_input_is_invalid;
 logic s3_input_is_flushed;
 logic s3_special_case;
@@ -134,6 +135,7 @@ logic signed[9:0] s3_exponent_add;
 logic s3_sign_bit;
 
 fp_32b_t s4_special_result;
+logic s4_valid_data_in;
 logic s4_input_is_invalid;
 logic s4_input_is_flushed;
 logic s4_special_case;
@@ -148,6 +150,7 @@ logic s4_valid_data_in;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s3_special_result <= 0;
+        s3_valid_data_in <= 0;
         s3_input_is_invalid <= 0;
         s3_input_is_flushed <= 0;
         s3_special_case <= 0;
@@ -157,6 +160,7 @@ always_ff @(posedge clk or posedge rst) begin
         s3_sign_bit <= 0;
 
         s4_special_result <= 0;
+        s4_valid_data_in <= 0;
         s4_input_is_invalid <= 0;
         s4_input_is_flushed <= 0;
         s4_special_case <= 0;
@@ -166,6 +170,7 @@ always_ff @(posedge clk or posedge rst) begin
         s4_exponent_add <= 0;
     end else begin
         s3_special_result <= s2_special_result;
+        s3_valid_data_in <= s2_valid_data_in;
         s3_input_is_invalid <= s2_input_is_invalid;
         s3_input_is_flushed <= s2_input_is_flushed;
         s3_special_case <= s2_special_case;
@@ -175,6 +180,7 @@ always_ff @(posedge clk or posedge rst) begin
         s3_sign_bit <= s2_sign_bit;
 
         s4_special_result <= s3_special_result;
+        s4_valid_data_in <= s3_valid_data_in;
         s4_input_is_invalid <= s3_input_is_invalid;
         s4_input_is_flushed <= s3_input_is_flushed;
         s4_special_case <= s3_special_case;

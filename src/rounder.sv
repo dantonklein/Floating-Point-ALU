@@ -36,3 +36,40 @@ module floating_point_rounder (
     assign rounded_mantissa_pre_overflow_detection = round_up ? mantissa_plus_one : {1'b0,mantissa};
 
 endmodule
+
+module q1_23_fixed_point_rounder (
+    input logic[23:0] in,
+    input logic guard, round, sticky, sign,
+    input logic[2:0] rounding_mode,
+    output logic[23:0] out
+);
+    logic[23:0] in_plus_one;
+    assign in_plus_one = in + 1'b1;
+
+    logic round_up;
+    always_comb begin
+        case(rounding_mode) 
+            RNE: begin
+                round_up = guard & (round | sticky | in[0]);
+            end
+            RTZ: begin
+                round_up = 1'b0;
+            end
+            RDN: begin
+                round_up = sign & (guard | round | sticky);
+            end
+            RUP: begin
+                round_up = ~sign & (guard | round | sticky);
+            end
+            RMM: begin
+                round_up = guard;
+            end
+            default: begin
+                round_up = 1'b0;
+            end
+        endcase
+    end
+
+    assign out = round_up ? in_plus_one : in;
+
+endmodule
