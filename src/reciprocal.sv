@@ -82,12 +82,26 @@ mantissa_reciprocal_24bit s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_s
 
 //fixed point Q1.23
 logic[23:0] s1_x_n, s2_x_n, s3_x_n, s4_x_n, s5_x_n;
-logic[23:0] s1_a;
+logic[23:0] s1_a, s2_a, s3_a, s4_a, s5_a, s6_a, s7_a, s8_a;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s1_a <= 0;
+        s2_a <= 0;
+        s3_a <= 0;
+        s4_a <= 0;
+        s5_a <= 0;
+        s6_a <= 0;
+        s7_a <= 0;
+        s8_a <= 0;
     end else begin
         s1_a <= in;
+        s2_a <= s1_a;
+        s3_a <= s2_a;
+        s4_a <= s3_a;
+        s5_a <= s4_a;
+        s6_a <= s5_a;
+        s7_a <= s6_a;
+        s8_a <= s7_a;
     end
 end
 
@@ -178,5 +192,56 @@ assign s7_sticky = | s7_x_n_1[20:0];
 q1_23_fixed_point_rounder s7_rounder(.in(s7_x_n_1_rounder_input), .guard(s7_guard), .round(s7_round), .sticky(s7_sticky), .sign(s7_sign), .rounding_mode(s7_rounding_mode), .out(s7_x_n_1_rounded));
 
 logic[23:0] s8_x_n_1;
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s8_x_n_1 <= 0;
+    end else begin
+        s8_x_n_1 <= s7_x_n_1_rounded;
+    end
+end
+//stage 8 y2 = a * xn+1
+logic [47:0] s10_y2;
+
+Dadda_Multiplier_24bit_pipelined s8_mult(.clk(clk), .rst(rst), in1(s8_a), in2(s8_x_n_1), out(s10_y2));
+
+//stage 10: z2 = 2 - y2
+
+assign s10_y_truncated_and_negated = ~(s10_y2[47:20]) + 1'b1;
+
+logic [27:0] s10_z;
+KSA_nbits #(.WIDTH(28)) s10_subtractor(.in1(two), .in2(s10_y_truncated_and_negated), .out(s10_z));
+
+logic [26:0] s11_z;
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s11_z <= 0;
+    end else begin
+        s11_z <= s10_z[26:0];
+    end
+end
+
+//stage 11
+logic s11_guard, s11_round, s11_sticky;
+//fixed point Q1.23
+logic[23:0] s11_z_rounder_input, s11_z_rounded;
+logic[2:0] s11_rounding_mode;
+logic s11_sign;
+
+assign {s11_z_rounder_input, s11_guard, s11_round, s11_sticky} = s11_z;
+assign s11_rounding_mode = rounding_modes[11];
+assign s11_sign = signs[11];
+
+q1_23_fixed_point_rounder s11_rounder(.in(s11_z_rounder_input), .guard(s11_guard), .round(s11_round), .sticky(s11_sticky), .sign(s11_sign), .rounding_mode(s11_rounding_mode), .out(s11_z_rounded));
+
+logic[23:0] s12_z;
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s5_x_n <= 0;
+        s12_z <= 0;
+    end else begin
+        s5_x_n <= s4_x_n;
+        s12_z <= s11_z_rounded;
+    end
+end
 
 endmodule
