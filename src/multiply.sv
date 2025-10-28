@@ -25,7 +25,6 @@ logic s1_in1_isdenorm, s1_in2_isdenorm;
 
 //special cases for input
 always_comb begin
-    //input 1
     s1_in1_iszero = (s1_in1_init.exponent == '0) & (s1_in1_init.mantissa == '0);
     s1_in1_isinfinite = (s1_in1_init.exponent == '1) & (s1_in1_init.mantissa == '0);
     s1_in1_isqnan = (s1_in1_init.exponent == '1) & (s1_in1_init.mantissa != '0) & s1_in1_init.mantissa[22];

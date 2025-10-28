@@ -1,3 +1,5 @@
+import fp_pkg::*;
+
 module mantissa_reciprocal_24bit_LUT (
     input logic clk, rst,
     input logic[7:0] in,
@@ -23,10 +25,11 @@ module mantissa_reciprocal_24bit (
     input logic[23:0] in,
     input logic[2:0] rounding_mode,
     input logic sign,
-    output logic[23:0] out,
+    output logic[22:0] out,
     output logic valid_data_out,
     output logic[2:0] rounding_mode_out,
-    output logic sign_out 
+    output logic sign_out,
+    output logic output_is_1, guard, round, sticky 
 );
 //whats cool about this reciprocal is that the inputs will always be in [1,2)
 //the lut output will be in (0.5,1]
@@ -57,7 +60,7 @@ assign signs[0] = sign;
 
 genvar i;
 generate
-    for(i = 0; i < 15; i++) begin
+    for(i = 0; i < 14; i++) begin
         always_ff @(posedge clk or posedge rst) begin
             if(rst) begin
                 valid_data_ins[i+1] <= 0;
@@ -72,13 +75,11 @@ generate
 end
 endgenerate
 
-assign valid_data_out = valid_data_ins[15];
-assign rounding_mode_out = rounding_modes[15];
 
 //stage 0: read from lookup table
 logic[7:0] s0_input_slice;
 assign s0_input_slice = in[22:15];
-mantissa_reciprocal_24bit s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
+mantissa_reciprocal_24bit_LUT s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
 
 //fixed point Q1.23
 logic[23:0] s1_x_n, s2_x_n, s3_x_n, s4_x_n, s5_x_n;
@@ -123,6 +124,7 @@ logic [27:0] two;
 assign s3_y_truncated_and_negated = ~(s3_y[47:20]) + 1'b1;
 assign two = 28'h8000000;
 
+//fixed point Q2.26
 logic [27:0] s3_z;
 KSA_nbits #(.WIDTH(28)) s3_subtractor(.in1(two), .in2(s3_y_truncated_and_negated), .out(s3_z));
 
@@ -169,7 +171,8 @@ end
 
 //stage 5
 
-logic[47:0] s7_x_n_1
+//fixed point Q2.46
+logic[47:0] s7_x_n_1;
 Dadda_Multiplier_24bit_pipelined s5_mult(.clk(clk), .rst(rst), in1(s5_x_n), in2(s5_z), out(s7_x_n_1));
 
 //stage 7
@@ -200,17 +203,24 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 //stage 8 y2 = a * xn+1
-logic [47:0] s10_y2;
 
+
+
+//fixed point Q2.46
+logic [47:0] s10_y2;
 Dadda_Multiplier_24bit_pipelined s8_mult(.clk(clk), .rst(rst), in1(s8_a), in2(s8_x_n_1), out(s10_y2));
 
 //stage 10: z2 = 2 - y2
 
+logic [27:0] s10_y_truncated_and_negated
+
 assign s10_y_truncated_and_negated = ~(s10_y2[47:20]) + 1'b1;
 
+//fixed point Q2.26
 logic [27:0] s10_z;
 KSA_nbits #(.WIDTH(28)) s10_subtractor(.in1(two), .in2(s10_y_truncated_and_negated), .out(s10_z));
 
+//fixed point Q1.26
 logic [26:0] s11_z;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -234,14 +244,88 @@ assign s11_sign = signs[11];
 q1_23_fixed_point_rounder s11_rounder(.in(s11_z_rounder_input), .guard(s11_guard), .round(s11_round), .sticky(s11_sticky), .sign(s11_sign), .rounding_mode(s11_rounding_mode), .out(s11_z_rounded));
 
 logic[23:0] s12_z;
+logic[23:0] s9_x_n_1, s10_x_n_1, s11_x_n_1, s12_x_n_1; 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
-        s5_x_n <= 0;
         s12_z <= 0;
+        s9_x_n_1 <= 0;
+        s10_x_n_1 <= 0;
+        s11_x_n_1 <= 0;
+        s12_x_n_1 <= 0;
     end else begin
-        s5_x_n <= s4_x_n;
         s12_z <= s11_z_rounded;
+        s9_x_n_1 <= s8_x_n_1;
+        s10_x_n_1 <= s9_x_n_1;
+        s11_x_n_1 <= s10_x_n_1;
+        s12_x_n_1 <= s11_x_n_1;
     end
 end
+
+//fixed point Q2.46
+logic[47:0] s14_out;
+Dadda_Multiplier_24bit_pipelined s12_mult(.clk(clk), .rst(rst), in1(s12_z), in2(s12_x_n_1), out(s14_out));
+
+//output will be in (0.5,1], we need to renormalize it into having the leading bit 1. the output is 23 bits with an implicit 1 at the start
+always_comb begin
+    output_is_1 = s14_out[46];
+    if(output_is_1) begin 
+        out = s14_out[45:23];
+        guard = s14_out[22];
+        round = s14_out[21];
+        sticky = | s14_out[20:0];
+    end else begin
+        out = s14_out[44:22];
+        guard = s14_out[21];
+        round = s14_out[20];
+        sticky = | s14_out[19:0];
+    end
+end
+
+
+
+assign valid_data_out = valid_data_ins[14];
+assign rounding_mode_out = rounding_modes[14];
+assign sign_out = signs[14];
+endmodule
+
+module fp_reciprocal_pipeline (
+    input logic clk, rst, valid_data_in,
+    input logic[31:0] in,
+    input logic[2:0] rounding_mode,
+    output logic[31:0] out,
+    output logic overflow, underflow, inexact, invalid_operation,
+    output logic valid_data_out
+);
+//Stage 1: Denorm, NaN, Zero, Infinity processing
+//input flag handling
+fp_32b_t s1_in_init;
+assign s1_in_init = in;
+
+//special case handling
+logic s1_in_iszero;
+logic s1_in_isinfinite;
+logic s1_in_isqnan;
+logic s1_in_issnan;
+logic s1_in_isdenorm;
+//special cases for input
+
+always_comb begin
+    s1_in_iszero = (s1_in_init.exponent == '0) & (s1_in_init.mantissa == '0);
+    s1_in_isinfinite = (s1_in_init.exponent == '1) & (s1_in_init.mantissa == '0);
+    s1_in_isqnan = (s1_in_init.exponent == '1) & (s1_in_init.mantissa != '0) & s1_in_init.mantissa[22];
+    s1_in_issnan = (s1_in_init.exponent == '1) & (s1_in_init.mantissa != '0) & ~s1_in_init.mantissa[22];
+    s1_in_isdenorm = (s1_in_init.exponent == '0) & (s1_in_init.mantissa != '0);
+end
+logic s1_input_is_invalid;
+logic s1_input_is_flushed;
+assign s1_input_is_invalid = s1_in_issnan;
+assign s1_input_is_flushed = s1_in_isdenorm;
+
+fp_32b_t s2_special_result, s2_in,
+logic s2_input_is_invalid;
+logic s2_input_is_flushed;
+logic s2_special_case;
+logic s2_valid_data_in;
+logic[2:0] s2_rounding_mode;
 
 endmodule
