@@ -22,14 +22,22 @@ endmodule
 
 module mantissa_reciprocal_24bit (
     input logic clk, rst, valid_data_in,
-    input logic[23:0] in,
+    input logic[22:0] in,
     input logic[2:0] rounding_mode,
     input logic sign,
+    input fp_32b_t special_result,
+    input logic input_is_invalid,
+    input logic input_is_flushed,
+    input logic special_case,
     output logic[22:0] out,
     output logic valid_data_out,
     output logic[2:0] rounding_mode_out,
     output logic sign_out,
-    output logic output_is_1, guard, round, sticky 
+    output fp_32b_t special_result_out,
+    output logic input_is_invalid_out,
+    output logic input_is_flushed_out,
+    output logic special_case_out,
+    output logic guard, round, sticky 
 );
 //whats cool about this reciprocal is that the inputs will always be in [1,2)
 //the lut output will be in (0.5,1]
@@ -47,16 +55,24 @@ module mantissa_reciprocal_24bit (
 //stage 10 z2 = 2 - y2
 //stage 11 round
 //stage 12-13: out = xn+1 * z2
-//stage 14 round
 
 //handle valid_data_flag and have rounding_modes available on all stages
 logic valid_data_ins[15];
 logic[2:0] rounding_modes[15];
 logic signs[15];
+fp_32b_t special_results[15];
+logic input_is_invalids[15];
+logic input_is_flusheds[15];
+logic special_cases[15];
 
 assign valid_data_ins[0] = valid_data_in;
 assign rounding_modes[0] = rounding_mode;
 assign signs[0] = sign;
+assign special_results[0] = special_result;
+assign input_is_invalids[0] = input_is_invalid;
+assign input_is_flusheds[0] = input_is_flushed;
+assign special_cases[0] = special_case;
+
 
 genvar i;
 generate
@@ -66,10 +82,18 @@ generate
                 valid_data_ins[i+1] <= 0;
                 rounding_modes[i+1] <= 0;
                 signs[i+1] <= 0;
+                special_results[i+1] <= 0;
+                input_is_invalids[i+1] <= 0;
+                input_is_flusheds[i+1] <= 0;
+                special_cases[i+1] <= 0;
             end else begin
                 valid_data_ins[i+1] <= valid_data_ins[i];
                 rounding_modes[i+1] <= rounding_modes[i];
                 signs[i+1] <= signs[i];
+                special_results[i+1] <= special_results[i];
+                input_is_invalids[i+1] <= input_is_invalids[i];
+                input_is_flusheds[i+1] <= input_is_flusheds[i];
+                special_cases[i+1] <= special_cases[i];
             end
         end
 end
@@ -95,7 +119,7 @@ always_ff @(posedge clk or posedge rst) begin
         s7_a <= 0;
         s8_a <= 0;
     end else begin
-        s1_a <= in;
+        s1_a <= {1'b1,in};
         s2_a <= s1_a;
         s3_a <= s2_a;
         s4_a <= s3_a;
@@ -263,11 +287,12 @@ end
 
 //fixed point Q2.46
 logic[47:0] s14_out;
+logic s14_output_is_1;
 Dadda_Multiplier_24bit_pipelined s12_mult(.clk(clk), .rst(rst), in1(s12_z), in2(s12_x_n_1), out(s14_out));
 
 //output will be in (0.5,1], we need to renormalize it into having the leading bit 1. the output is 23 bits with an implicit 1 at the start
 always_comb begin
-    output_is_1 = s14_out[46];
+    s14_output_is_1 = s14_out[46];
     if(output_is_1) begin 
         out = s14_out[45:23];
         guard = s14_out[22];
@@ -282,10 +307,14 @@ always_comb begin
 end
 
 
-
 assign valid_data_out = valid_data_ins[14];
 assign rounding_mode_out = rounding_modes[14];
 assign sign_out = signs[14];
+assign special_result_out = special_results[14];
+assign input_is_invalid_out = input_is_invalids[14]; 
+assign input_is_flushed_out = input_is_flusheds[14];
+assign special_case_out = special_cases[14];
+
 endmodule
 
 module fp_reciprocal_pipeline (
@@ -327,5 +356,104 @@ logic s2_input_is_flushed;
 logic s2_special_case;
 logic s2_valid_data_in;
 logic[2:0] s2_rounding_mode;
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s2_in <= '0;
+        s2_input_is_invalid <= 0;
+        s2_input_is_flushed <= 0;
+        s2_valid_data_in <= 0;
+        s2_rounding_mode <= '0;
+        s2_special_case <= 0;
+        s2_special_result <= '0;
+    end else begin
+        s2_in <= s1_in1_init;
+        s2_input_is_invalid <= s1_input_is_invalid;
+        s2_input_is_flushed <= s1_input_is_flushed;
+        s2_valid_data_in <= valid_data_in;
+        s2_rounding_mode <= rounding_mode;
+
+        //Special cases:
+
+        //propagate qnan
+        if(s1_in_isqnan) begin
+            s2_special_case <= 1;
+            s2_special_result <= s1_in_init;
+        //convert snan to qnan
+        end else if(s1_in_issnan) begin
+            s2_special_case <= 1;
+            s2_special_result <= s1_in_init | 32'b00000000010000000000000000000000;
+
+        //when infinity
+        end else if(s1_in_isinfinite) begin
+            //propagate qnan, exception flag is raised 
+            s2_special_case <= 1;
+            s2_special_result <= {s1_in_init.sign,31'd0};
+
+        //when zero
+        end else if(s1_in_iszero | s1_in_isdenorm) begin
+            s2_special_case <= 1;
+            s2_special_result <= {s1_in_init.sign,31'h7F800000};
+
+        end else begin
+            s2_special_case <= 0;
+            //this doesnt matter, but its there to show intent that the special result doesnt get propagated since special case is zero
+            s2_special_result <= '0;
+        end
+    end
+end
+//stage 2 begin mantissa and exponent calculation
+
+logic[7:0] s3_exponent; 
+logic s3_mantissa_is_one;
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s3_mantissa_is_one <= 0;
+        s3_exponent <= 0;
+    end else begin
+        //if the mantissa is 1
+        s3_mantissa_is_one <= (s2_in.mantissa == 23'd0);
+        s3_exponent <= s2_in.exponent;
+    end
+end
+
+logic[7:0] s4_s16_new_exponents[13];
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s4_s16_new_exponents[0] <= 0;
+    end else begin
+        if(s3_mantissa_is_one) begin
+        s4_s16_new_exponents[0] <= 8'254 - s3_exponent;
+        end else begin
+        s4_s16_new_exponents[0] <= 8'253 - s3_exponent;
+        end
+    end
+end
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        for(int i = 0; i < 13; i++) begin
+            s4_s16_new_exponents[i+1] <= 0;
+        end
+    end else begin
+        for(int i = 0; i < 13; i++) begin
+            s4_s16_new_exponents[i+1] <= s4_s16_new_exponents[i];
+        end
+    end
+end
+
+logic[22:0] s16_mantissa_pre_round;
+logic s16_valid_data_out;
+logic s16_rounding_mode;
+fp_32b_t s16_special_result;
+logic s16_input_is_invalid;
+logic s16_input_is_flushed;
+logic s16_special_case;
+logic s16_sign, s16_guard, s16_round, s16_sticky;
+//i stuffed all the signals that need to be propagated in the module since i already needed later versions of the rounding mode and sign
+mantissa_reciprocal_24bit s2_reciprocal(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_in.mantissa), .rounding_mode(s2_rounding_mode), .sign(s2_in.sign),
+.special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s16_mantissa_pre_round),
+.valid_data_out(s16_valid_data_out), .rounding_mode_out(s16_rounding_mode), .special_result_out(s16_special_result), .input_is_invalid_out(s16_input_is_invalid), 
+.input_is_flushed_out(s16_input_is_flushed), .special_case_out(s16_special_case), .sign_out(s16_sign), .guard(s16_guard), .round(s16_round), .sticky(s16_sticky));
 
 endmodule
