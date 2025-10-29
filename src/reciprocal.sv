@@ -188,10 +188,8 @@ q1_23_fixed_point_rounder s4_rounder(.in(s4_z_rounder_input), .guard(s4_guard), 
 logic[23:0] s5_z;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
-        s5_x_n <= 0;
         s5_z <= 0;
     end else begin
-        s5_x_n <= s4_x_n;
         s5_z <= s4_z_rounded;
     end
 end
@@ -436,20 +434,20 @@ always_ff @(posedge clk or posedge rst) begin
         s4_s16_new_exponents[0] <= 0;
     end else begin
         if(s3_new_exponent[8]) begin
-        s4_s16_new_exponents[0] <= 0;
+            s4_s16_new_exponents[0] <= 0;
         end else begin
-        s4_s16_new_exponents[0] <= s3_new_exponent[7:0];
+            s4_s16_new_exponents[0] <= s3_new_exponent[7:0];
         end
     end
 end
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
-        for(int i = 0; i < 13; i++) begin
+        for(int i = 0; i < 12; i++) begin
             s4_s16_new_exponents[i+1] <= 0;
         end
     end else begin
-        for(int i = 0; i < 13; i++) begin
+        for(int i = 0; i < 12; i++) begin
             s4_s16_new_exponents[i+1] <= s4_s16_new_exponents[i];
         end
     end
