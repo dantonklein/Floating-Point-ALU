@@ -25,7 +25,7 @@ module mantissa_reciprocal_24bit (
     input logic[22:0] in,
     input logic[2:0] rounding_mode,
     input logic sign,
-    input fp_32b_t special_result,
+    input logic[31:0] special_result,
     input logic input_is_invalid,
     input logic input_is_flushed,
     input logic special_case,
@@ -33,7 +33,7 @@ module mantissa_reciprocal_24bit (
     output logic valid_data_out,
     output logic[2:0] rounding_mode_out,
     output logic sign_out,
-    output fp_32b_t special_result_out,
+    output logic[31:0] special_result_out,
     output logic input_is_invalid_out,
     output logic input_is_flushed_out,
     output logic special_case_out,
@@ -103,10 +103,13 @@ endgenerate
 //stage 0: read from lookup table
 logic[7:0] s0_input_slice;
 assign s0_input_slice = in[22:15];
-mantissa_reciprocal_24bit_LUT s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
+
 
 //fixed point Q1.23
 logic[23:0] s1_x_n, s2_x_n, s3_x_n, s4_x_n, s5_x_n;
+
+mantissa_reciprocal_24bit_LUT s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
+
 logic[23:0] s1_a, s2_a, s3_a, s4_a, s5_a, s6_a, s7_a, s8_a;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -135,7 +138,7 @@ end
 
 //fixed point Q2.46
 logic [47:0] s3_y;
-Dadda_Multiplier_24bit_pipelined s1_mult(.clk(clk), .rst(rst), in1(s1_a), in2(s1_x_n), out(s3_y));
+Dadda_Multiplier_24bit_pipelined s1_mult(.clk(clk), .rst(rst), .in1(s1_a), .in2(s1_x_n), .out(s3_y));
 
 
 //stage 3: z = 2 - y
@@ -197,7 +200,7 @@ end
 
 //fixed point Q2.46
 logic[47:0] s7_x_n_1;
-Dadda_Multiplier_24bit_pipelined s5_mult(.clk(clk), .rst(rst), in1(s5_x_n), in2(s5_z), out(s7_x_n_1));
+Dadda_Multiplier_24bit_pipelined s5_mult(.clk(clk), .rst(rst), .in1(s5_x_n), .in2(s5_z), .out(s7_x_n_1));
 
 //stage 7
 
@@ -232,11 +235,11 @@ end
 
 //fixed point Q2.46
 logic [47:0] s10_y2;
-Dadda_Multiplier_24bit_pipelined s8_mult(.clk(clk), .rst(rst), in1(s8_a), in2(s8_x_n_1), out(s10_y2));
+Dadda_Multiplier_24bit_pipelined s8_mult(.clk(clk), .rst(rst), .in1(s8_a), .in2(s8_x_n_1), .out(s10_y2));
 
 //stage 10: z2 = 2 - y2
 
-logic [27:0] s10_y_truncated_and_negated
+logic [27:0] s10_y_truncated_and_negated;
 
 assign s10_y_truncated_and_negated = ~(s10_y2[47:20]) + 1'b1;
 
@@ -288,12 +291,12 @@ end
 //fixed point Q2.46
 logic[47:0] s14_out;
 logic s14_output_is_1;
-Dadda_Multiplier_24bit_pipelined s12_mult(.clk(clk), .rst(rst), in1(s12_z), in2(s12_x_n_1), out(s14_out));
+Dadda_Multiplier_24bit_pipelined s12_mult(.clk(clk), .rst(rst), .in1(s12_z), .in2(s12_x_n_1), .out(s14_out));
 
 //output will be in (0.5,1], we need to renormalize it into having the leading bit 1. the output is 23 bits with an implicit 1 at the start
 always_comb begin
     s14_output_is_1 = s14_out[46];
-    if(output_is_1) begin 
+    if(s14_output_is_1) begin 
         out = s14_out[45:23];
         guard = s14_out[22];
         round = s14_out[21];
@@ -350,7 +353,7 @@ logic s1_input_is_flushed;
 assign s1_input_is_invalid = s1_in_issnan;
 assign s1_input_is_flushed = s1_in_isdenorm;
 
-fp_32b_t s2_special_result, s2_in,
+fp_32b_t s2_special_result, s2_in;
 logic s2_input_is_invalid;
 logic s2_input_is_flushed;
 logic s2_special_case;
@@ -367,7 +370,7 @@ always_ff @(posedge clk or posedge rst) begin
         s2_special_case <= 0;
         s2_special_result <= '0;
     end else begin
-        s2_in <= s1_in1_init;
+        s2_in <= s1_in_init;
         s2_input_is_invalid <= s1_input_is_invalid;
         s2_input_is_flushed <= s1_input_is_flushed;
         s2_valid_data_in <= valid_data_in;
@@ -417,15 +420,25 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 
+//stage 3 exponent calculation
+logic[8:0] s3_new_exponent;
+always_comb begin
+    if(s3_mantissa_is_one) begin
+        s3_new_exponent <= 8'd254 - s3_exponent;
+    end else begin
+        s3_new_exponent <= 8'd253 - s3_exponent;
+    end
+end
+
 logic[7:0] s4_s16_new_exponents[13];
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s4_s16_new_exponents[0] <= 0;
     end else begin
-        if(s3_mantissa_is_one) begin
-        s4_s16_new_exponents[0] <= 8'254 - s3_exponent;
+        if(s3_new_exponent[8]) begin
+        s4_s16_new_exponents[0] <= 0;
         end else begin
-        s4_s16_new_exponents[0] <= 8'253 - s3_exponent;
+        s4_s16_new_exponents[0] <= s3_new_exponent[7:0];
         end
     end
 end
@@ -442,9 +455,11 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 
+//stage 16, final rounding
+
 logic[22:0] s16_mantissa_pre_round;
 logic s16_valid_data_out;
-logic s16_rounding_mode;
+logic[2:0] s16_rounding_mode;
 fp_32b_t s16_special_result;
 logic s16_input_is_invalid;
 logic s16_input_is_flushed;
@@ -456,4 +471,86 @@ mantissa_reciprocal_24bit s2_reciprocal(.clk(clk), .rst(rst), .valid_data_in(s2_
 .valid_data_out(s16_valid_data_out), .rounding_mode_out(s16_rounding_mode), .special_result_out(s16_special_result), .input_is_invalid_out(s16_input_is_invalid), 
 .input_is_flushed_out(s16_input_is_flushed), .special_case_out(s16_special_case), .sign_out(s16_sign), .guard(s16_guard), .round(s16_round), .sticky(s16_sticky));
 
+logic s16_exponent_overflow, s16_exponent_underflow, s16_has_grs_bits;
+logic[23:0] s16_rounded_mantissa_temp;
+logic[22:0] s16_rounded_mantissa;
+logic[7:0] s16_exponent;
+logic[8:0] s16_rounded_exponent;
+assign s16_exponent = s4_s16_new_exponents[12];
+floating_point_rounder rounder(.mantissa(s16_mantissa_pre_round), .guard(s16_guard), .round(s16_round), .sticky(s16_sticky),
+.sign(s16_sign), .rounding_mode(s16_rounding_mode), .rounded_mantissa_pre_overflow_detection(s16_rounded_mantissa_temp));
+always_comb begin
+    if(s16_rounded_mantissa_temp[23]) begin
+        s16_rounded_mantissa = 23'd0;
+        s16_rounded_exponent = s16_exponent + 8'd1;
+    end else begin
+        s16_rounded_mantissa = s16_rounded_mantissa_temp[22:0];
+        s16_rounded_exponent = s16_exponent;
+    end
+
+
+    s16_exponent_overflow = (s16_rounded_exponent > 9'd254);
+    s16_exponent_underflow = (s16_rounded_exponent == 9'd0);
+    s16_has_grs_bits = s16_guard | s16_round | s16_sticky;
+end
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        out <= '0;
+        overflow <= 0;
+        underflow <= 0;
+        inexact <= 0;
+        invalid_operation <= 0;
+        valid_data_out <= 0;
+    end else begin
+        invalid_operation <= s16_input_is_invalid;
+        valid_data_out <= s16_valid_data_out;
+        if(s16_special_case) begin
+            overflow <= 1'b0;
+            inexact <= 1'b0;
+            underflow <= s16_input_is_flushed;
+            out <= s16_special_result;
+        end else if(s16_exponent_overflow) begin
+            overflow <= 1'b1;
+            underflow <= 1'b0;
+            inexact <= 1'b1;
+            case(s16_rounding_mode)
+                RTZ: begin
+                    out <= {s16_sign, 8'hFE, 23'h7FFFFF};
+                end
+                RDN: begin
+                    if(s16_sign) begin
+                        out <= {1'b1, 8'hFF, 23'h0};
+                    end else begin
+                        out <= {1'b0, 8'hFE, 23'h7FFFFF};
+                    end
+                end
+                RUP: begin
+                    if(s16_sign) begin
+                        out <= {1'b1, 8'hFE, 23'h7FFFFF};
+                    end else begin
+                        out <= {1'b0, 8'hFF, 23'h0};
+                    end
+                end
+                default: begin
+                    out <= {s16_sign, 8'hFF, 23'h0};
+                end
+            endcase
+        end else if(s16_exponent_underflow) begin
+            overflow <= 1'b0;
+            underflow <= s16_has_grs_bits;
+            inexact <= 1'b1;
+            if(s16_rounding_mode == RDN) begin
+                out <= {1'b1, 8'h0, 23'h0};
+            end else begin
+                out <= {s16_sign, 8'h0, 23'h0};
+            end
+        end else begin
+            overflow <= 1'b0;
+            underflow <= 1'b0;
+            inexact <= s16_has_grs_bits;
+            out <= {s16_sign, s16_rounded_exponent[7:0],  s16_rounded_mantissa};
+        end
+    end
+end
 endmodule
