@@ -429,24 +429,19 @@ always_comb begin
 end
 
 logic[7:0] s4_s16_new_exponents[13];
+
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s4_s16_new_exponents[0] <= 0;
+        for(int i = 0; i < 12; i++) begin
+            s4_s16_new_exponents[i+1] <= 0;
+        end
     end else begin
         if(s3_new_exponent[8]) begin
             s4_s16_new_exponents[0] <= 0;
         end else begin
             s4_s16_new_exponents[0] <= s3_new_exponent[7:0];
         end
-    end
-end
-
-always_ff @(posedge clk or posedge rst) begin
-    if(rst) begin
-        for(int i = 0; i < 12; i++) begin
-            s4_s16_new_exponents[i+1] <= 0;
-        end
-    end else begin
         for(int i = 0; i < 12; i++) begin
             s4_s16_new_exponents[i+1] <= s4_s16_new_exponents[i];
         end
