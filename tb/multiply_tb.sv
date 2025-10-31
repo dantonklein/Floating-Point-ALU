@@ -2,7 +2,7 @@ import fp_pkg::*;
 
 `timescale 1 ns/ 10 ps 
 
-//This class contains the transation object for the floating point adder/sub.
+//This class contains the transation object for the floating point multiplication.
 //This will later be expanded for all the floating point operations
 
 class fp_item;

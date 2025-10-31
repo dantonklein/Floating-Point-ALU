@@ -143,7 +143,6 @@ logic[2:0] s4_rounding_mode;
 logic s4_sign_bit;
 logic signed[9:0] s4_exponent_add;
 logic[47:0] s4_multiplier_out;
-logic s4_valid_data_in;
 
 
 always_ff @(posedge clk or posedge rst) begin
