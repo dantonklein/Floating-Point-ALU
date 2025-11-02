@@ -73,7 +73,7 @@ module reciprocal_tb #(
     logic valid_data_out;
    // logic normalized_mantissa_lsb, normalized_guard, normalized_round, normalized_sticky, round_up;
 
-    fp_reciprocal_pipeline DUT (.*);
+    fp_reciprocal_pipeline2 DUT (.*);
 
     
     initial begin : generate_clock
