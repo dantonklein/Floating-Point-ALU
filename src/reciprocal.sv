@@ -686,9 +686,8 @@ end
 //stage 4 xn+1 = xn * z
 //fixed point Q2.52
 logic[53:0] s6_x_n_1_pre_truncate;
-logic[26:0] s4_x_n_concat;
-assign s4_x_n_concat = {s4_x_n, 3'b000}; 
-multiplier_delayed #(.WIDTH(27)) s4_mult (.clk(clk), .rst(rst), .in1(s4_x_n_concat), .in2(s4_z), .out(s6_x_n_1_pre_truncate));
+
+multiplier_delayed #(.WIDTH(27)) s4_mult (.clk(clk), .rst(rst), .in1(s4_x_n), .in2(s4_z), .out(s6_x_n_1_pre_truncate));
 
 //stage 6 y2 = a * xn+1
 logic[26:0] s6_x_n_1;
