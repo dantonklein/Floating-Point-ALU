@@ -21,36 +21,15 @@ def generate_reciprocal_lut():
         
         # Calculate reciprocal
         reciprocal = 1.0 / input_value
-        reciprocal_bits = float_to_bits(reciprocal)
+        # Convert directly to Q1.26 fixed point (27 bits)
+        # Q1.26 means: 1 integer bit, 26 fractional bits
+        # Multiply by 2^26 to convert to fixed-point
+        fixed_point_27bit = int(reciprocal * (1 << 26))
         
-        # Extract exponent and mantissa
-        reciprocal_exp = (reciprocal_bits >> 23) & 0xFF
-        reciprocal_mantissa = reciprocal_bits & 0x7FFFFF
+        # Clamp to 27 bits (shouldn't be necessary but safe)
+        fixed_point_27bit = fixed_point_27bit & 0x7FFFFFF
         
-        # Denormalize to Q1.23 fixed point
-        # The value is: (1.mantissa) × 2^(exp - 127)
-        # We want it in Q1.23 where bit 23 is the 2^0 place
-        
-        # Add implicit 1 to get actual mantissa value
-        reciprocal_mantissa_with_implicit = 0x800000 | reciprocal_mantissa  # 1.mantissa
-        
-        # Shift based on exponent
-        # If exp = 127 (2^0), no shift needed
-        # If exp = 126 (2^-1), shift right by 1
-        # If exp = 125 (2^-2), shift right by 2
-        shift = 127 - reciprocal_exp
-        
-        if shift > 0:
-            reciprocal_fixed = reciprocal_mantissa_with_implicit >> shift
-        elif shift < 0:
-            reciprocal_fixed = reciprocal_mantissa_with_implicit << (-shift)
-        else:
-            reciprocal_fixed = reciprocal_mantissa_with_implicit
-        
-        # Keep only 24 bits for Q1.23
-        recip_fixed = reciprocal_fixed & 0xFFFFFF
-        # Store full 24-bit mantissa (including implicit 1)
-        lut.append(reciprocal_fixed)
+        lut.append(fixed_point_27bit)
         
     return lut
 

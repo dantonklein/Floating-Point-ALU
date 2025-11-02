@@ -1,11 +1,11 @@
 import fp_pkg::*;
 
-module mantissa_reciprocal_24bit_LUT (
+module mantissa_reciprocal_27bit_LUT (
     input logic clk, rst,
     input logic[7:0] in,
-    output logic[23:0] out
+    output logic[26:0] out
 );
-    logic[23:0] lut[256];
+    logic[26:0] lut[256];
 
     initial begin
         $readmemh("reciprocal_lut256.mem", lut);
@@ -623,12 +623,12 @@ logic[7:0] s0_input_slice;
 assign s0_input_slice = in[22:15];
 
 
-//fixed point Q1.23
-logic[23:0] s1_x_n, s2_x_n, s3_x_n, s4_x_n;
+//fixed point Q1.26
+logic[26:0] s1_x_n, s2_x_n, s3_x_n, s4_x_n;
 
-mantissa_reciprocal_24bit_LUT s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
+mantissa_reciprocal_27bit_LUT s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
 
-logic[23:0] s1_a, s2_a, s3_a, s4_a, s5_a, s6_a;
+logic[26:0] s1_a, s2_a, s3_a, s4_a, s5_a, s6_a;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s1_a <= 0;
@@ -638,7 +638,7 @@ always_ff @(posedge clk or posedge rst) begin
         s5_a <= 0;
         s6_a <= 0;
     end else begin
-        s1_a <= {1'b1,in};
+        s1_a <= {1'b1, in, 3'b000};
         s2_a <= s1_a;
         s3_a <= s2_a;
         s4_a <= s3_a;
@@ -649,9 +649,9 @@ end
 
 //stage 1: y = a * xn
 
-//fixed point Q2.46
-logic [47:0] s3_y;
-Dadda_Multiplier_24bit_pipelined s1_mult(.clk(clk), .rst(rst), .in1(s1_a), .in2(s1_x_n), .out(s3_y));
+//fixed point Q2.52
+logic [53:0] s3_y;
+multiplier_delayed #(.WIDTH(27)) s1_mult(.clk(clk), .rst(rst), .in1(s1_a), .in2(s1_x_n), .out(s3_y));
 
 //stage 3: z = 2 - y
 
@@ -660,7 +660,7 @@ logic [27:0] s3_y_truncated_and_negated;
 logic [27:0] two;
 
 //the reason 3 extra bits to the right of the decimal point are maintained is to avoid needing to round
-assign s3_y_truncated_and_negated = ~(s3_y[47:20]) + 1'b1;
+assign s3_y_truncated_and_negated = ~(s3_y[53:26]) + 1'b1;
 assign two = 28'h8000000;
 
 //fixed point Q2.26
@@ -694,11 +694,9 @@ multiplier_delayed #(.WIDTH(27)) s4_mult (.clk(clk), .rst(rst), .in1(s4_x_n_conc
 logic[26:0] s6_x_n_1;
 assign s6_x_n_1 = s6_x_n_1_pre_truncate[52:26]; 
 
-logic[26:0] s6_a_concat;
-assign s6_a_concat = {s6_a,3'b000};
 
 logic[53:0] s8_y2_pre_truncate;
-multiplier_delayed #(.WIDTH(27)) s6_mult (.clk(clk), .rst(rst), .in1(s6_x_n_1), .in2(s6_a_concat), .out(s8_y2_pre_truncate));
+multiplier_delayed #(.WIDTH(27)) s6_mult (.clk(clk), .rst(rst), .in1(s6_x_n_1), .in2(s6_a), .out(s8_y2_pre_truncate));
 
 //stage 8 z2 = 2 - y2
 logic[27:0] s8_y2_truncated_and_negated;
