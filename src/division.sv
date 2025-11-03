@@ -1,7 +1,7 @@
 //input1/input2
 import fp_pkg::*;
 
-module fp_multiply_pipeline (
+module fp_division_pipeline (
     input logic clk, rst, valid_data_in,
     input logic[31:0] in1, in2,
     input logic[2:0] rounding_mode,

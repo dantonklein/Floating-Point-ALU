@@ -64,7 +64,7 @@ class fp_item;
     endfunction
 endclass
 
-module multiply_tb #(
+module division_tb #(
     parameter int NUM_TESTS = 100
 );
 
