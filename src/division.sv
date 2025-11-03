@@ -6,7 +6,7 @@ module fp_multiply_pipeline (
     input logic[31:0] in1, in2,
     input logic[2:0] rounding_mode,
     output logic[31:0] out,
-    output logic overflow, underflow, inexact, invalid_operation,
+    output logic overflow, underflow, inexact, invalid_operation, division_by_zero,
     output logic valid_data_out
 );
 //Stage 1: Denorm, NaN, Zero, Infinity processing
@@ -133,22 +133,24 @@ assign s2_exponent_sub = $signed({1'b0, s2_in1.exponent}) - $signed({1'b0, s2_in
 logic s2_sign_bit;
 assign s2_sign_bit = s2_in1.sign ^ s2_in2.sign;
 
-
+logic s3_s13_division_by_zero[11];
 logic signed[9:0] s3_s13_new_exponents[11];
 fp_32b_t s3_s13_in1[11];
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
-        s3_s13_new_exponents[0] <= 0;
-        s3_s13_in1[0] <= 0;
-        for(int i = 0; i < 10; i++) begin
-            s3_s13_new_exponents[i+1] <= 0;
-            s3_s13_in1[i+1] <= 0;
+        for(int i = 0; i < 11; i++) begin
+            s3_s13_division_by_zero[i] <= 0;
+            s3_s13_new_exponents[i] <= 0;
+            s3_s13_in1[i] <= 0;
         end
     end else begin
         s3_s13_new_exponents[0] <= s2_exponent_sub;
         s3_s13_in1[0] <= s2_in1;
-        for(int i = 0; i < 10 i++) begin
+        s3_s13_division_by_zero[0] <= s2_division_by_zero;
+        for(int i = 0; i < 10; i++) begin
             s3_s13_new_exponents[i+1] <= s3_s13_new_exponents[i];
+            s3_s13_in1[i+1] <= s3_s13_in1[i];
+            s3_s13_division_by_zero[i+1] <= s3_s13_division_by_zero[i];
         end
     end
 end
@@ -163,12 +165,12 @@ fp_32b_t s13_special_result;
 logic s13_input_is_invalid;
 logic s13_input_is_flushed;
 logic s13_special_case;
-logic s13_sign;
+logic s13_sign_bit;
 //i stuffed all the signals that need to be propagated in the module since i already needed later versions of the rounding mode and sign
 mantissa_reciprocal s13_reciprocal(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_in2.mantissa), .rounding_mode(s2_rounding_mode), .sign(s2_sign_bit),
 .special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s13_reciprocal_out),
 .valid_data_out(s13_valid_data_in), .rounding_mode_out(s13_rounding_mode), .special_result_out(s13_special_result), .input_is_invalid_out(s13_input_is_invalid), 
-.input_is_flushed_out(s13_input_is_flushed), .special_case_out(s13_special_case), .sign_out(s13_sign));
+.input_is_flushed_out(s13_input_is_flushed), .special_case_out(s13_special_case), .sign_out(s13_sign_bit));
 
 //truncate to Q1.26
 assign s13_reciprocal_out_truncated = s13_reciprocal_out[52:26];
@@ -181,6 +183,7 @@ logic s14_special_case;
 logic[2:0] s14_rounding_mode;
 logic s14_sign_bit;
 logic signed[9:0] s14_exponent;
+logic s14_division_by_zero;
 
 fp_32b_t s15_special_result;
 logic s15_valid_data_in;
@@ -190,7 +193,7 @@ logic s15_special_case;
 logic[2:0] s15_rounding_mode;
 logic s15_sign_bit;
 logic signed[9:0] s15_exponent;
-logic[53:0] s15_mult_out;
+logic s15_division_by_zero;
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -202,7 +205,8 @@ always_ff @(posedge clk or posedge rst) begin
         s14_rounding_mode <= 0;
         s14_sign_bit <= 0;
         s14_exponent <= 0;
-        
+        s14_division_by_zero <= 0;
+
         s15_special_result <= 0;
         s15_valid_data_in <= 0;
         s15_input_is_invalid <= 0;
@@ -211,6 +215,7 @@ always_ff @(posedge clk or posedge rst) begin
         s15_rounding_mode <= 0;
         s15_sign_bit <= 0;
         s15_exponent <= 0;
+        s15_division_by_zero <= 0;
     end else begin
         s14_special_result <= s13_special_result;
         s14_valid_data_in <= s13_valid_data_in;
@@ -219,8 +224,9 @@ always_ff @(posedge clk or posedge rst) begin
         s14_special_case <= s13_special_case;
         s14_rounding_mode <= s13_rounding_mode;
         s14_sign_bit <= s13_sign_bit;
-        s14_exponent <= s13_exponent;
-        
+        s14_exponent <= s3_s13_new_exponents[10];
+        s14_division_by_zero <= s3_s13_division_by_zero[10];
+
         s15_special_result <= s14_special_result;
         s15_valid_data_in <= s14_valid_data_in;
         s15_input_is_invalid <= s14_input_is_invalid;
@@ -229,8 +235,120 @@ always_ff @(posedge clk or posedge rst) begin
         s15_rounding_mode <= s14_rounding_mode;
         s15_sign_bit <= s14_sign_bit;
         s15_exponent <= s14_exponent;
+        s15_division_by_zero <= s14_division_by_zero;
     end
 end
 
-multiplier_delayed #(.WIDTH(27)) s13_s15_mult(.clk(clk), .rst(rst), .in1(s3_s13_in1[10]), .in2(s13_reciprocal_out), .out(s15_mult_out));
+//Q1.26
+logic[26:0] s13_in1;
+assign s13_in1 = {1'b1, s3_s13_in1[10].mantissa, 3'b000};
+//Q2.52
+logic[53:0] s15_mult_out;
+multiplier_delayed #(.WIDTH(27)) s13_s15_mult(.clk(clk), .rst(rst), .in1(s13_in1), .in2(s13_reciprocal_out), .out(s15_mult_out));
+
+//handle shifting
+logic[22:0] s15_normalized_mantissa;
+logic signed[9:0] s15_normalized_exponent;
+logic s15_guard, s15_round, s15_sticky;
+always_comb begin
+    //output is 1.xxxxxxxxxxxx... and doesnt need normalization
+    if(s15_mult_out[52]) begin
+        s15_normalized_mantissa = s15_mult_out[51:29];
+        s15_guard = s15_mult_out[28];
+        s15_round = s15_mult_out[27];
+        s15_sticky = | s15_mult_out[26:0];
+        s15_normalized_exponent = s15_exponent;
+    //out is 0.1xxxxxxxxxx, needs normalization
+    end else begin
+        s15_normalized_mantissa = s15_mult_out[50:28];
+        s15_guard = s15_mult_out[27];
+        s15_round = s15_mult_out[26];
+        s15_sticky = | s15_mult_out[25:0];
+        s15_normalized_exponent = s15_exponent - 10'sd1;
+    end
+end
+
+//rounding and flush to zero
+logic s15_exponent_overflow, s15_exponent_underflow, s15_has_grs_bits;
+logic[23:0] s15_rounded_mantissa_temp;
+logic[22:0] s15_rounded_mantissa;
+logic signed[9:0] s15_rounded_exponent;
+floating_point_rounder rounder(.mantissa(s15_normalized_mantissa), .guard(s15_guard), .round(s15_round), .sticky(s15_sticky),
+.sign(s15_sign_bit), .rounding_mode(s15_rounding_mode), .rounded_mantissa_pre_overflow_detection(s15_rounded_mantissa_temp));
+always_comb begin
+    if(s15_rounded_mantissa_temp[23]) begin
+        s15_rounded_mantissa = 23'd0;
+        s15_rounded_exponent = s15_normalized_exponent + 10'sd1;
+    end else begin
+        s15_rounded_mantissa = s15_rounded_mantissa_temp[22:0];
+        s15_rounded_exponent = s15_normalized_exponent;
+    end
+
+
+    s15_exponent_overflow = (s15_rounded_exponent > 10'sd254);
+    s15_exponent_underflow = (s15_rounded_exponent <= 10'sd0);
+    s15_has_grs_bits = s15_guard | s15_round | s15_sticky;
+end
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        out <= '0;
+        overflow <= 0;
+        underflow <= 0;
+        inexact <= 0;
+        invalid_operation <= 0;
+        valid_data_out <= 0;
+        division_by_zero <= 0;
+    end else begin
+        invalid_operation <= s15_input_is_invalid;
+        valid_data_out <= s15_valid_data_in;
+        division_by_zero <= s15_division_by_zero;
+        if(s15_special_case) begin
+            overflow <= 1'b0;
+            inexact <= 1'b0;
+            underflow <= s15_input_is_flushed;
+            out <= s15_special_result;
+        end else if(s15_exponent_overflow) begin
+            overflow <= 1'b1;
+            underflow <= 1'b0;
+            inexact <= 1'b1;
+            case(s15_rounding_mode)
+                RTZ: begin
+                    out = {s15_sign_bit, 8'hFE, 23'h7FFFFF};
+                end
+                RDN: begin
+                    if(s15_sign_bit) begin
+                        out <= {1'b1, 8'hFF, 23'h0};
+                    end else begin
+                        out <= {1'b0, 8'hFE, 23'h7FFFFF};
+                    end
+                end
+                RUP: begin
+                    if(s15_sign_bit) begin
+                        out <= {1'b1, 8'hFE, 23'h7FFFFF};
+                    end else begin
+                        out <= {1'b0, 8'hFF, 23'h0};
+                    end
+                end
+                default: begin
+                    out <= {s15_sign_bit, 8'hFF, 23'h0};
+                end
+            endcase
+        end else if(s15_exponent_underflow) begin
+            overflow <= 1'b0;
+            underflow <= s15_has_grs_bits;
+            inexact <= 1'b1;
+            if(s15_rounding_mode == RDN) begin
+                out <= {1'b1, 8'h0, 23'h0};
+            end else begin
+                out <= {s15_sign_bit, 8'h0, 23'h0};
+            end
+        end else begin
+            overflow <= 1'b0;
+            underflow <= 1'b0;
+            inexact <= s15_has_grs_bits;
+            out <= {s15_sign_bit, s15_rounded_exponent[7:0],  s15_rounded_mantissa};
+        end
+    end
+end
 endmodule
