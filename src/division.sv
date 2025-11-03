@@ -128,11 +128,109 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 logic signed[9:0] s2_exponent_sub; //extra bit to account for overflow
-assign s2_exponent_sub = $signed({1'b0, s2_in1.exponent}) - $signed({1'b0, s2_in2.exponent}) - 10'sd127;
+assign s2_exponent_sub = $signed({1'b0, s2_in1.exponent}) - $signed({1'b0, s2_in2.exponent}) + 10'sd127;
 
 logic s2_sign_bit;
 assign s2_sign_bit = s2_in1.sign ^ s2_in2.sign;
 
-logic[22:0] s2_reciprocal_in;
 
+logic signed[9:0] s3_s13_new_exponents[11];
+fp_32b_t s3_s13_in1[11];
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s3_s13_new_exponents[0] <= 0;
+        s3_s13_in1[0] <= 0;
+        for(int i = 0; i < 10; i++) begin
+            s3_s13_new_exponents[i+1] <= 0;
+            s3_s13_in1[i+1] <= 0;
+        end
+    end else begin
+        s3_s13_new_exponents[0] <= s2_exponent_sub;
+        s3_s13_in1[0] <= s2_in1;
+        for(int i = 0; i < 10 i++) begin
+            s3_s13_new_exponents[i+1] <= s3_s13_new_exponents[i];
+        end
+    end
+end
+
+//stage 13
+//output is Q2.52
+logic[53:0] s13_reciprocal_out;
+logic[26:0] s13_reciprocal_out_truncated;
+logic s13_valid_data_in;
+logic[2:0] s13_rounding_mode;
+fp_32b_t s13_special_result;
+logic s13_input_is_invalid;
+logic s13_input_is_flushed;
+logic s13_special_case;
+logic s13_sign;
+//i stuffed all the signals that need to be propagated in the module since i already needed later versions of the rounding mode and sign
+mantissa_reciprocal s13_reciprocal(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_in2.mantissa), .rounding_mode(s2_rounding_mode), .sign(s2_sign_bit),
+.special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s13_reciprocal_out),
+.valid_data_out(s13_valid_data_in), .rounding_mode_out(s13_rounding_mode), .special_result_out(s13_special_result), .input_is_invalid_out(s13_input_is_invalid), 
+.input_is_flushed_out(s13_input_is_flushed), .special_case_out(s13_special_case), .sign_out(s13_sign));
+
+//truncate to Q1.26
+assign s13_reciprocal_out_truncated = s13_reciprocal_out[52:26];
+
+fp_32b_t s14_special_result;
+logic s14_valid_data_in;
+logic s14_input_is_invalid;
+logic s14_input_is_flushed;
+logic s14_special_case;
+logic[2:0] s14_rounding_mode;
+logic s14_sign_bit;
+logic signed[9:0] s14_exponent;
+
+fp_32b_t s15_special_result;
+logic s15_valid_data_in;
+logic s15_input_is_invalid;
+logic s15_input_is_flushed;
+logic s15_special_case;
+logic[2:0] s15_rounding_mode;
+logic s15_sign_bit;
+logic signed[9:0] s15_exponent;
+logic[53:0] s15_mult_out;
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s14_special_result <= 0;
+        s14_valid_data_in <= 0;
+        s14_input_is_invalid <= 0;
+        s14_input_is_flushed <= 0;
+        s14_special_case <= 0;
+        s14_rounding_mode <= 0;
+        s14_sign_bit <= 0;
+        s14_exponent <= 0;
+        
+        s15_special_result <= 0;
+        s15_valid_data_in <= 0;
+        s15_input_is_invalid <= 0;
+        s15_input_is_flushed <= 0;
+        s15_special_case <= 0;
+        s15_rounding_mode <= 0;
+        s15_sign_bit <= 0;
+        s15_exponent <= 0;
+    end else begin
+        s14_special_result <= s13_special_result;
+        s14_valid_data_in <= s13_valid_data_in;
+        s14_input_is_invalid <= s13_input_is_invalid;
+        s14_input_is_flushed <= s13_input_is_flushed;
+        s14_special_case <= s13_special_case;
+        s14_rounding_mode <= s13_rounding_mode;
+        s14_sign_bit <= s13_sign_bit;
+        s14_exponent <= s13_exponent;
+        
+        s15_special_result <= s14_special_result;
+        s15_valid_data_in <= s14_valid_data_in;
+        s15_input_is_invalid <= s14_input_is_invalid;
+        s15_input_is_flushed <= s14_input_is_flushed;
+        s15_special_case <= s14_special_case;
+        s15_rounding_mode <= s14_rounding_mode;
+        s15_sign_bit <= s14_sign_bit;
+        s15_exponent <= s14_exponent;
+    end
+end
+
+multiplier_delayed #(.WIDTH(27)) s13_s15_mult(.clk(clk), .rst(rst), .in1(s3_s13_in1[10]), .in2(s13_reciprocal_out), .out(s15_mult_out));
 endmodule

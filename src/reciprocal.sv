@@ -20,8 +20,8 @@ module mantissa_reciprocal_27bit_LUT (
     end
 endmodule
 
-//gonna make new one without intermediate rounding
-module mantissa_reciprocal_24bit (
+
+module mantissa_reciprocal (
     input logic clk, rst, valid_data_in,
     input logic[22:0] in,
     input logic[2:0] rounding_mode,
@@ -30,15 +30,14 @@ module mantissa_reciprocal_24bit (
     input logic input_is_invalid,
     input logic input_is_flushed,
     input logic special_case,
-    output logic[22:0] out,
+    output logic[53:0] out,
     output logic valid_data_out,
     output logic[2:0] rounding_mode_out,
     output logic sign_out,
     output logic[31:0] special_result_out,
     output logic input_is_invalid_out,
     output logic input_is_flushed_out,
-    output logic special_case_out,
-    output logic guard, round, sticky 
+    output logic special_case_out
 );
 //whats cool about this reciprocal is that the inputs will always be in [1,2)
 //the lut output will be in (0.5,1]
@@ -201,25 +200,10 @@ end
 
 //stage 9 out = xn+1 * z2
 //fixed point Q2.52
-logic[53:0] s11_out;
-logic s11_output_is_1;
-multiplier_delayed #(.WIDTH(27)) s9_mult (.clk(clk), .rst(rst), .in1(s9_x_n_1), .in2(s9_z2), .out(s11_out));
+
+multiplier_delayed #(.WIDTH(27)) s9_mult (.clk(clk), .rst(rst), .in1(s9_x_n_1), .in2(s9_z2), .out(out));
 
 //output will be in (0.5,1], we need to renormalize it into having the leading bit 1. the output is 23 bits with an implicit 1 at the start
-always_comb begin
-    s11_output_is_1 = s11_out[52];
-    if(s11_output_is_1) begin 
-        out = s11_out[51:29];
-        guard = s11_out[28];
-        round = s11_out[27];
-        sticky = | s11_out[26:0];
-    end else begin
-        out = s11_out[50:28];
-        guard = s11_out[27];
-        round = s11_out[26];
-        sticky = | s11_out[25:0];
-    end
-end
 
 
 assign valid_data_out = valid_data_ins[11];
@@ -363,7 +347,7 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 //stage 13, final rounding
-
+logic[53:0] s13_reciprocal_out;
 logic[22:0] s13_mantissa_pre_round;
 logic s13_valid_data_out;
 logic[2:0] s13_rounding_mode;
@@ -374,9 +358,27 @@ logic s13_special_case;
 logic s13_sign, s13_guard, s13_round, s13_sticky;
 //i stuffed all the signals that need to be propagated in the module since i already needed later versions of the rounding mode and sign
 mantissa_reciprocal_24bit s13_reciprocal(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_in.mantissa), .rounding_mode(s2_rounding_mode), .sign(s2_in.sign),
-.special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s13_mantissa_pre_round),
+.special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s13_reciprocal_out),
 .valid_data_out(s13_valid_data_out), .rounding_mode_out(s13_rounding_mode), .special_result_out(s13_special_result), .input_is_invalid_out(s13_input_is_invalid), 
-.input_is_flushed_out(s13_input_is_flushed), .special_case_out(s13_special_case), .sign_out(s13_sign), .guard(s13_guard), .round(s13_round), .sticky(s13_sticky));
+.input_is_flushed_out(s13_input_is_flushed), .special_case_out(s13_special_case), .sign_out(s13_sign));
+
+logic s13_output_is_1;
+//output will be in (0.5,1], we need to renormalize it into having the leading bit 1. the output is 23 bits with an implicit 1 at the start
+
+always_comb begin
+    s13_output_is_1 = s13_reciprocal_out[52];
+    if(s13_output_is_1) begin 
+        s13_mantissa_pre_round = s13_reciprocal_out[51:29];
+        s13_guard = s13_reciprocal_out[28];
+        s13_round = s13_reciprocal_out[27];
+        s13_sticky = | s13_reciprocal_out[26:0];
+    end else begin
+        s13_mantissa_pre_round = s13_reciprocal_out[50:28];
+        s13_guard = s13_reciprocal_out[27];
+        s13_round = s13_reciprocal_out[26];
+        s13_sticky = | s13_reciprocal_out[25:0];
+    end
+end
 
 logic s13_exponent_overflow, s13_exponent_underflow, s13_has_grs_bits;
 logic[23:0] s13_rounded_mantissa_temp;
