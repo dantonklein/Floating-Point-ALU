@@ -244,7 +244,7 @@ logic[26:0] s13_in1;
 assign s13_in1 = {1'b1, s3_s13_in1[10].mantissa, 3'b000};
 //Q2.52
 logic[53:0] s15_mult_out;
-multiplier_delayed #(.WIDTH(27)) s13_s15_mult(.clk(clk), .rst(rst), .in1(s13_in1), .in2(s13_reciprocal_out), .out(s15_mult_out));
+multiplier_delayed #(.WIDTH(27)) s13_s15_mult(.clk(clk), .rst(rst), .in1(s13_in1), .in2(s13_reciprocal_out_truncated), .out(s15_mult_out));
 
 //handle shifting
 logic[22:0] s15_normalized_mantissa;
