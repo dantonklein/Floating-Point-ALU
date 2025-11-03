@@ -89,7 +89,7 @@ always_ff @(posedge clk or posedge rst) begin
             s2_special_result <= s1_in2_init | 32'b00000000010000000000000000000000;
 
         //when both infinity
-        end else if((s1_in1_isinfinite & s1_in2_iszero) | (s1_in1_iszero & s1_in2_isinfinite)) begin
+        end else if((s1_in1_isinfinite & (s1_in2_iszero | s1_in2_isdenorm)) | ((s1_in1_iszero | s1_in1_isdenorm) & s1_in2_isinfinite)) begin
             //propagate qnan, exception flag is raised 
             s2_special_case <= 1;
             s2_special_result <= {s1_in1_init.sign ^ s1_in2_init.sign,31'h7FC00000};
