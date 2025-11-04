@@ -10,11 +10,19 @@ For RISCV the rounding modes are
 100: Round to nearest, ties to max magnitude
 
 to do: 
-multiplier
+x multiplier
 fused add/multiply
-division
+x division
 square root
 exponentiation
+sigmoid
+softmax
+relu
+matmult
+convolution
+matrix-vector multiplication
+maxpool
+
 logarithm
 max/min
 reciprocal

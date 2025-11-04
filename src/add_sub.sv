@@ -8,7 +8,7 @@ module fp_addsub_pipeline (
     input logic[2:0] rounding_mode,
     output logic[31:0] out,
     output logic overflow, underflow, inexact, invalid_operation,
-    output logic valid_data_out//,
+    output logic valid_data_out
     //output logic normalized_mantissa_lsb, normalized_guard, normalized_round, normalized_sticky, round_up
 );
 
