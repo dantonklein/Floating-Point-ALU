@@ -1,0 +1,339 @@
+import fp_pkg::*;
+
+module mantissa_inverse_sqrt_28bit_LUT (
+    input logic clk, rst,
+    input logic[7:0] in,
+    output logic[27:0] out
+);
+    logic[27:0] lut[256];
+
+    initial begin
+        $readmemh("inverse_sqrt_lut256.mem", lut);
+    end
+
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            out <= 0;
+        end else begin
+            out <= lut[in];
+        end
+    end
+endmodule
+
+module mantissa_inverse_sqrt (
+    input logic clk, rst, valid_data_in,
+    //input is Q2.23
+    input logic[24:0] in,
+    input logic[2:0] rounding_mode,
+    input logic sign,
+    input logic[31:0] special_result,
+    input logic input_is_invalid,
+    input logic input_is_flushed,
+    input logic special_case,
+    output logic[55:0] out,
+    output logic valid_data_out,
+    output logic[2:0] rounding_mode_out,
+    output logic sign_out,
+    output logic[31:0] special_result_out,
+    output logic input_is_invalid_out,
+    output logic input_is_flushed_out,
+    output logic special_case_out
+);
+//input is in [1,4) since it could be scaled
+//output is in (0.5,1]
+//the pipeline: 1 cycle of lookup table and 2 iterations of newtons method xn+1 = 1/2 * xn(3-(a * xn^2)) which take  cycles each
+//stage 0: look up table
+//FIRST NEWTONS METHOD ITERATION
+//stage 1-2: w = x_n ^ 2
+//stage 3-4: y = a * w
+//stage 5: z = 3 - y
+//stage 6-7: x_n+1 = 1/2*x_n*z
+//SECOND NEWTONS METHOD ITERATION
+//stage 8-9: w2 = x_n+1 ^2
+//stage 10-11: y2 = a * w2
+//stage 12: z2 = 3 - y2
+//stage 13-14: out = 1/2*x_n+1*z2
+logic valid_data_ins[16];
+logic[2:0] rounding_modes[16];
+logic signs[16];
+fp_32b_t special_results[16];
+logic input_is_invalids[16];
+logic input_is_flusheds[16];
+logic special_cases[16];
+
+assign valid_data_ins[0] = valid_data_in;
+assign rounding_modes[0] = rounding_mode;
+assign signs[0] = sign;
+assign special_results[0] = special_result;
+assign input_is_invalids[0] = input_is_invalid;
+assign input_is_flusheds[0] = input_is_flushed;
+assign special_cases[0] = special_case;
+
+genvar i;
+generate
+    for(i = 0; i < 15; i++) begin
+        always_ff @(posedge clk or posedge rst) begin
+            if(rst) begin
+                valid_data_ins[i+1] <= 0;
+                rounding_modes[i+1] <= 0;
+                signs[i+1] <= 0;
+                special_results[i+1] <= 0;
+                input_is_invalids[i+1] <= 0;
+                input_is_flusheds[i+1] <= 0;
+                special_cases[i+1] <= 0;
+            end else begin
+                valid_data_ins[i+1] <= valid_data_ins[i];
+                rounding_modes[i+1] <= rounding_modes[i];
+                signs[i+1] <= signs[i];
+                special_results[i+1] <= special_results[i];
+                input_is_invalids[i+1] <= input_is_invalids[i];
+                input_is_flusheds[i+1] <= input_is_flusheds[i];
+                special_cases[i+1] <= special_cases[i];
+            end
+        end
+end
+endgenerate
+
+//stage 0: read from lookup table
+logic[7:0] s0_input_slice;
+assign s0_input_slice = in[24:17];
+
+//fixed point Q2.26
+logic[27:0] s1_x_n, s2_x_n, s3_x_n, s4_x_n, s5_x_n, s6_x_n;
+mantissa_inverse_sqrt_28bit_LUT s0_inverse_sqrt_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
+
+//fixed point Q2.26
+logic[27:0] s1_a, s2_a, s3_a, s4_a, s5_a, s6_a, s7_a, s8_a, s9_a, s10_a;
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s1_a <= 0;
+        s2_a <= 0;
+        s3_a <= 0;
+        s4_a <= 0;
+        s5_a <= 0;
+        s6_a <= 0;
+        s7_a <= 0;
+        s8_a <= 0;
+        s9_a <= 0;
+        s10_a <= 0;
+    end else begin
+        s1_a <= {in, 3'b000};
+        s2_a <= s1_a;
+        s3_a <= s2_a;
+        s4_a <= s3_a;
+        s5_a <= s4_a;
+        s6_a <= s5_a;
+        s7_a <= s6_a;
+        s8_a <= s7_a;
+        s9_a <= s8_a;
+        s10_a <= s9_a;
+    end
+end
+
+//stage 1: w = x_n ^ 2
+
+//fixed point q4.52
+logic[55:0] s3_w;
+multiplier_delayed #(.WIDTH(28)) s1_mult(.clk(clk), .rst(rst), .in1(s1_x_n), .in2(s1_x_n), .out(s3_w));
+
+//stage 3: y = a * w
+//truncate back to Q2.26
+logic[27:0] s3_w_truncated;
+assign s3_w_truncated = s3_w[53:26];
+
+//fixed point q4.52
+logic[55:0] s5_y;
+multiplier_delayed #(.WIDTH(28)) s3_mult(.clk(clk), .rst(rst), .in1(s3_a), .in2(s3_w_truncated), .out(s5_y));
+
+//stage 5 z = 3 - y
+
+//fixed point Q2.26
+logic [27:0] s5_y_truncated_and_negated;
+logic [27:0] three;
+
+assign s5_y_truncated_and_negated = ~(s5_y[53:26]) + 1'b1;
+assign three = 28'hC000000;
+
+//fixed point Q2.26
+logic [27:0] s5_z, s6_z;
+KSA_nbits #(.WIDTH(28)) s3_subtractor(.in1(three), .in2(s5_y_truncated_and_negated), .out(s5_z));
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s2_x_n <= 0;
+        s3_x_n <= 0;
+        s4_x_n <= 0;
+        s5_x_n <= 0;
+        s6_x_n <= 0;
+        s6_z <= 0;
+    end else begin
+        s2_x_n <= s1_x_n;
+        s3_x_n <= s2_x_n;
+        s4_x_n <= s3_x_n;
+        s5_x_n <= s4_x_n;
+        s6_x_n <= s5_x_n;
+        s6_z <= s5_z;
+    end
+end
+
+//stage 6: x_n+1 = 1/2*x_n*z
+logic [27:0] s6_x_n_shifted;
+assign s6_x_n_shifted = s6_x_n >> 1;
+
+//fixed point Q4.52
+logic[55:0] s8_x_n_1_pre_truncate;
+multiplier_delayed #(.WIDTH(28)) s6_mult(.clk(clk), .rst(rst), .in1(s6_x_n_shifted), .in2(s6_z), .out(s8_x_n_1_pre_truncate));
+
+//fixed point Q2.26
+logic[27:0] s8_x_n_1;
+assign s8_x_n_1 = s8_x_n_1_pre_truncate[53:26];
+
+//stage 8: w2 = x_n+1^2
+logic[55:0] s10_w2;
+multiplier_delayed #(.WIDTH(28)) s8_mult(.clk(clk), .rst(rst), .in1(s8_x_n_1), .in2(s8_x_n_1), .out(s10_w2));
+
+//stage 10: y2 = a * w2
+//truncate back to Q2.26
+logic[27:0] s10_w2_truncated;
+assign s10_w2_truncated = s10_w2[53:26];
+
+//fixed point q4.52
+logic[55:0] s12_y2;
+multiplier_delayed #(.WIDTH(28)) s10_mult(.clk(clk), .rst(rst), .in1(s10_a), .in2(s10_w2_truncated), .out(s12_y2));
+
+//stage 12: z2 = 3 - y2
+
+//fixed point Q2.26
+logic[27:0] s12_y2_truncated_and_negated;
+
+assign s12_y2_truncated_and_negated = ~(s12_y2[53:26]) + 1'b1;
+
+logic[27:0] s12_z2;
+KSA_nbits #(.WIDTH(28)) s8_subtractor(.in1(three), .in2(s12_y2_truncated_and_negated), .out(s12_z2));
+
+logic[27:0] s13_z2;
+logic[27:0] s9_x_n_1, s10_x_n_1, s11_x_n_1, s12_x_n_1, s13_x_n_1;
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s13_z2 <= 0;
+        s9_x_n_1 <= 0;
+        s10_x_n_1 <= 0;
+        s11_x_n_1 <= 0;
+        s12_x_n_1 <= 0;
+        s13_x_n_1 <= 0;
+    end else begin
+        s13_z2 <= s12_z2;
+        s9_x_n_1 <= s8_x_n_1;
+        s10_x_n_1 <= s9_x_n_1;
+        s11_x_n_1 <= s10_x_n_1;
+        s12_x_n_1 <= s11_x_n_1;
+        s13_x_n_1 <= s12_x_n_1;
+    end
+end
+
+//stage 13: out = 1/2*x_n+1*z2
+logic [27:0] s13_x_n_1_shifted;
+assign s13_x_n_1_shifted = s13_x_n_1 >> 1;
+multiplier_delayed #(.WIDTH(28)) s13_mult(.clk(clk), .rst(rst), .in1(s13_x_n_1_shifted), .in2(s13_z2), .out(out));
+
+assign valid_data_out = valid_data_ins[15];
+assign rounding_mode_out = rounding_modes[15];
+assign sign_out = signs[15];
+assign special_result_out = special_results[15];
+assign input_is_invalid_out = input_is_invalids[15]; 
+assign input_is_flushed_out = input_is_flusheds[15];
+assign special_case_out = special_cases[15];
+
+endmodule
+
+module fp_reciprocal_pipeline (
+    input logic clk, rst, valid_data_in,
+    input logic[31:0] in,
+    input logic[2:0] rounding_mode,
+    output logic[31:0] out,
+    output logic overflow, underflow, inexact, invalid_operation,
+    output logic valid_data_out
+);
+//Stage 1: Denorm, NaN, Zero, Infinity processing
+//input flag handling
+fp_32b_t s1_in_init;
+assign s1_in_init = in;
+
+//special case handling
+logic s1_in_iszero;
+logic s1_in_isinfinite;
+logic s1_in_isqnan;
+logic s1_in_issnan;
+logic s1_in_isdenorm;
+//special cases for input
+
+always_comb begin
+    s1_in_iszero = (s1_in_init.exponent == '0) & (s1_in_init.mantissa == '0);
+    s1_in_isinfinite = (s1_in_init.exponent == '1) & (s1_in_init.mantissa == '0);
+    s1_in_isqnan = (s1_in_init.exponent == '1) & (s1_in_init.mantissa != '0) & s1_in_init.mantissa[22];
+    s1_in_issnan = (s1_in_init.exponent == '1) & (s1_in_init.mantissa != '0) & ~s1_in_init.mantissa[22];
+    s1_in_isdenorm = (s1_in_init.exponent == '0) & (s1_in_init.mantissa != '0);
+end
+logic s1_input_is_invalid;
+logic s1_input_is_flushed;
+assign s1_input_is_invalid = s1_in_issnan;
+assign s1_input_is_flushed = s1_in_isdenorm;
+
+fp_32b_t s2_special_result, s2_in;
+logic s2_input_is_invalid;
+logic s2_input_is_flushed;
+logic s2_special_case;
+logic s2_valid_data_in;
+logic[2:0] s2_rounding_mode;
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s2_in <= '0;
+        s2_input_is_invalid <= 0;
+        s2_input_is_flushed <= 0;
+        s2_valid_data_in <= 0;
+        s2_rounding_mode <= '0;
+        s2_special_case <= 0;
+        s2_special_result <= '0;
+    end else begin
+        s2_in <= s1_in_init;
+        s2_input_is_invalid <= s1_input_is_invalid;
+        s2_input_is_flushed <= s1_input_is_flushed;
+        s2_valid_data_in <= valid_data_in;
+        s2_rounding_mode <= rounding_mode;
+
+        //Special cases:
+
+        //propagate qnan
+        if(s1_in_isqnan) begin
+            s2_special_case <= 1;
+            s2_special_result <= s1_in_init;
+        //convert snan to qnan
+        end else if(s1_in_issnan) begin
+            s2_special_case <= 1;
+            s2_special_result <= s1_in_init | 32'b00000000010000000000000000000000;
+        //when number is negative
+        end else if(s1_in_init.sign) begin
+            s2_special_case <= 1;
+            s2_special_result <= 32'h7FC00000;
+        //when infinity
+        end else if(s1_in_isinfinite) begin
+            //propagate qnan, exception flag is raised 
+            s2_special_case <= 1;
+            s2_special_result <= {s1_in_init.sign,31'd0};
+
+        //when zero
+        end else if(s1_in_iszero | s1_in_isdenorm) begin
+            s2_special_case <= 1;
+            s2_special_result <= {s1_in_init.sign,31'h7F800000};
+
+        end else begin
+            s2_special_case <= 0;
+            //this doesnt matter, but its there to show intent that the special result doesnt get propagated since special case is zero
+            s2_special_result <= '0;
+        end
+    end
+end
+//stage 2 begin mantissa and exponent calculation
+
+endmodule;

@@ -41,7 +41,7 @@ module mantissa_reciprocal (
 );
 //whats cool about this reciprocal is that the inputs will always be in [1,2)
 //the lut output will be in (0.5,1]
-//the pipeline: 1 cycle of lookup table and 2 iterations of newtons method xn+1 = xn(2-axn) which take 7 cycles each
+//the pipeline: 1 cycle of lookup table and 2 iterations of newtons method xn+1 = xn(2-axn) which take 5 cycles each
 //input is Q1.23 wide
 //stage 0: look up table
 //FIRST NEWTONS METHOD ITERATION
@@ -221,7 +221,7 @@ module fp_reciprocal_pipeline (
     input logic[31:0] in,
     input logic[2:0] rounding_mode,
     output logic[31:0] out,
-    output logic overflow, underflow, inexact, invalid_operation,
+    output logic overflow, underflow, inexact, invalid_operation, division_by_zero,
     output logic valid_data_out
 );
 //Stage 1: Denorm, NaN, Zero, Infinity processing
@@ -254,6 +254,7 @@ logic s2_input_is_invalid;
 logic s2_input_is_flushed;
 logic s2_special_case;
 logic s2_valid_data_in;
+logic s2_division_by_zero;
 logic[2:0] s2_rounding_mode;
 
 always_ff @(posedge clk or posedge rst) begin
@@ -265,13 +266,14 @@ always_ff @(posedge clk or posedge rst) begin
         s2_rounding_mode <= '0;
         s2_special_case <= 0;
         s2_special_result <= '0;
+        s2_division_by_zero <= 0;
     end else begin
         s2_in <= s1_in_init;
         s2_input_is_invalid <= s1_input_is_invalid;
         s2_input_is_flushed <= s1_input_is_flushed;
         s2_valid_data_in <= valid_data_in;
         s2_rounding_mode <= rounding_mode;
-
+        s2_division_by_zero <= (s1_in_iszero | s1_in_isdenorm) & ~s1_input_is_invalid;
         //Special cases:
 
         //propagate qnan
@@ -305,14 +307,17 @@ end
 
 logic[7:0] s3_exponent; 
 logic s3_mantissa_is_one;
+logic s3_division_by_zero
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s3_mantissa_is_one <= 0;
         s3_exponent <= 0;
+        s3_division_by_zero <= 0;
     end else begin
         //if the mantissa is 1
         s3_mantissa_is_one <= (s2_in.mantissa == 23'd0);
         s3_exponent <= s2_in.exponent;
+        s3_division_by_zero <= s2_division_by_zero;
     end
 end
 
@@ -325,14 +330,13 @@ always_comb begin
         s3_new_exponent = 9'd253 - {1'b0, s3_exponent};
     end
 end
-
+logic s4_s13_division_by_zero[10];
 logic[7:0] s4_s13_new_exponents[10];
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
-        s4_s13_new_exponents[0] <= 0;
-        for(int i = 0; i < 9; i++) begin
-            s4_s13_new_exponents[i+1] <= 0;
+        for(int i = 0; i < 10; i++) begin
+            s4_s13_new_exponents[i] <= 0;
         end
     end else begin
         if(s3_new_exponent[8]) begin
@@ -340,8 +344,10 @@ always_ff @(posedge clk or posedge rst) begin
         end else begin
             s4_s13_new_exponents[0] <= s3_new_exponent[7:0];
         end
+        s4_s13_division_by_zero[0] <= s3_division_by_zero;
         for(int i = 0; i < 9; i++) begin
             s4_s13_new_exponents[i+1] <= s4_s13_new_exponents[i];
+            s4_s13_division_by_zero[i+1] <= s4_s13_division_by_zero[i];
         end
     end
 end
@@ -414,6 +420,7 @@ always_ff @(posedge clk or posedge rst) begin
     end else begin
         invalid_operation <= s13_input_is_invalid;
         valid_data_out <= s13_valid_data_out;
+        division_by_zero <= s4_s13_division_by_zero[9];
         if(s13_special_case) begin
             overflow <= 1'b0;
             inexact <= 1'b0;
