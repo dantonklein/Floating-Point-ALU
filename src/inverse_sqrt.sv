@@ -251,7 +251,7 @@ module fp_reciprocal_pipeline (
     input logic[31:0] in,
     input logic[2:0] rounding_mode,
     output logic[31:0] out,
-    output logic overflow, underflow, inexact, invalid_operation,
+    output logic overflow, underflow, inexact, invalid_operation, division_by_zero,
     output logic valid_data_out
 );
 //Stage 1: Denorm, NaN, Zero, Infinity processing
@@ -284,6 +284,7 @@ logic s2_input_is_invalid;
 logic s2_input_is_flushed;
 logic s2_special_case;
 logic s2_valid_data_in;
+logic s2_division_by_zero;
 logic[2:0] s2_rounding_mode;
 
 always_ff @(posedge clk or posedge rst) begin
@@ -295,13 +296,14 @@ always_ff @(posedge clk or posedge rst) begin
         s2_rounding_mode <= '0;
         s2_special_case <= 0;
         s2_special_result <= '0;
+        s2_division_by_zero <= 0;
     end else begin
         s2_in <= s1_in_init;
         s2_input_is_invalid <= s1_input_is_invalid;
         s2_input_is_flushed <= s1_input_is_flushed;
         s2_valid_data_in <= valid_data_in;
         s2_rounding_mode <= rounding_mode;
-
+        s2_division_by_zero <= (s1_in_iszero | s1_in_isdenorm) & ~s1_input_is_invalid;
         //Special cases:
 
         //propagate qnan
@@ -349,15 +351,17 @@ always_comb begin
 end
 
 logic[7:0] s3_exponent; 
+logic s3_mantissa_is_one;
 logic s3_exponent_is_even;
-logic s3_division_by_zero
+logic s3_division_by_zero;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
+        s3_mantissa_is_one <= 0;
         s3_exponent_is_even <= 0;
         s3_exponent <= 0;
         s3_division_by_zero <= 0;
     end else begin
-        //if the mantissa is 1
+        s3_mantissa_is_one <= (s2_in.mantissa == 23'd0);
         s3_exponent_is_even <= s2_exponent_is_even;
         s3_exponent <= s2_in.exponent;
         s3_division_by_zero <= s2_division_by_zero;
@@ -365,9 +369,11 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 //stage 3 new exponent calculation
-logic[7:0] s3_new_exponent;
+logic[8:0] s3_new_exponent;
 always_comb begin
-    if(s3_exponent_is_even) begin
+    if(s3_mantissa_is_one && ~s3_exponent_is_even) begin
+        s3_new_exponent = ((9'd381 - s3_exponent) >> 1) + 9'd1;
+    end else if(s3_exponent_is_even) begin
         s3_new_exponent = (9'd382 - s3_exponent) >> 1;
     end else begin
         s3_new_exponent = (9'd381 - s3_exponent) >> 1;
@@ -383,7 +389,11 @@ always_ff @(posedge clk or posedge rst) begin
             s4_s17_division_by_zero[i] <= 0;
         end
     end else begin
-        s4_s17_new_exponents[0] <= s3_new_exponent;
+        if(s3_new_exponent[8]) begin
+            s4_s17_new_exponents[0] <= 0;
+        end else begin
+            s4_s17_new_exponents[0] <= s3_new_exponent[7:0];
+        end
         s4_s17_division_by_zero[0] <= s3_division_by_zero;
         for(int i = 0; i < 9; i++) begin
             s4_s17_new_exponents[i+1] <= s4_s17_new_exponents[i];
@@ -393,6 +403,7 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 //stage 17, final rounding
+//Q4.52
 logic[55:0] s17_reciprocal_out;
 logic[22:0] s17_mantissa_pre_round;
 logic s17_valid_data_out;
@@ -407,4 +418,103 @@ mantissa_inverse_sqrt s17_inverse_square_root(.clk(clk), .rst(rst), .valid_data_
 .special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s17_reciprocal_out),
 .valid_data_out(s17_valid_data_out), .rounding_mode_out(s17_rounding_mode), .special_result_out(s17_special_result), .input_is_invalid_out(s17_input_is_invalid), 
 .input_is_flushed_out(s17_input_is_flushed), .special_case_out(s17_special_case), .sign_out(s17_sign));
-endmodule;
+
+logic s17_output_is_1;
+//output will be in (0.5,1], we need to renormalize it into having the leading bit 1. the output is 23 bits with an implicit 1 at the start
+
+always_comb begin
+    s17_output_is_1 = s17_reciprocal_out[52];
+    if(s17_output_is_1) begin 
+        s17_mantissa_pre_round = s17_reciprocal_out[51:29];
+        s17_guard = s17_reciprocal_out[28];
+        s17_round = s17_reciprocal_out[27];
+        s17_sticky = | s17_reciprocal_out[26:0];
+    end else begin
+        s17_mantissa_pre_round = s17_reciprocal_out[50:28];
+        s17_guard = s17_reciprocal_out[27];
+        s17_round = s17_reciprocal_out[26];
+        s17_sticky = | s17_reciprocal_out[25:0];
+    end
+end
+
+logic s17_exponent_overflow, s17_exponent_underflow, s17_has_grs_bits;
+logic[23:0] s17_rounded_mantissa_temp;
+logic[22:0] s17_rounded_mantissa;
+logic[7:0] s17_exponent;
+logic[8:0] s17_rounded_exponent;
+assign s17_exponent = s4_s17_new_exponents[13];
+floating_point_rounder rounder(.mantissa(s17_mantissa_pre_round), .guard(s17_guard), .round(s17_round), .sticky(s17_sticky),
+.sign(s17_sign), .rounding_mode(s17_rounding_mode), .rounded_mantissa_pre_overflow_detection(s17_rounded_mantissa_temp));
+always_comb begin
+    if(s17_rounded_mantissa_temp[23]) begin
+        s17_rounded_mantissa = 23'd0;
+        s17_rounded_exponent = {1'b0,s17_exponent} + 9'd1;
+    end else begin
+        s17_rounded_mantissa = s17_rounded_mantissa_temp[22:0];
+        s17_rounded_exponent = {1'b0,s17_exponent};
+    end
+
+
+    s17_exponent_overflow = (s17_rounded_exponent > 9'd254);
+    s17_exponent_underflow = (s17_rounded_exponent == 9'd0);
+    s17_has_grs_bits = s17_guard | s17_round | s17_sticky;
+end
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        out <= '0;
+        overflow <= 0;
+        underflow <= 0;
+        inexact <= 0;
+        invalid_operation <= 0;
+        valid_data_out <= 0;
+        division_by_zero <= 0;
+    end else begin
+        invalid_operation <= s17_input_is_invalid;
+        valid_data_out <= s17_valid_data_out;
+        division_by_zero <= s4_s17_division_by_zero[13];
+        if(s17_special_case) begin
+            overflow <= 1'b0;
+            inexact <= 1'b0;
+            underflow <= s17_input_is_flushed;
+            out <= s17_special_result;
+        end else if(s17_exponent_overflow) begin
+            overflow <= 1'b1;
+            underflow <= 1'b0;
+            inexact <= 1'b1;
+            case(s17_rounding_mode)
+                RTZ: begin
+                    out <= {s17_sign, 8'hFE, 23'h7FFFFF};
+                end
+                RDN: begin
+                    if(s17_sign) begin
+                        out <= {1'b1, 8'hFF, 23'h0};
+                    end else begin
+                        out <= {1'b0, 8'hFE, 23'h7FFFFF};
+                    end
+                end
+                RUP: begin
+                    if(s17_sign) begin
+                        out <= {1'b1, 8'hFE, 23'h7FFFFF};
+                    end else begin
+                        out <= {1'b0, 8'hFF, 23'h0};
+                    end
+                end
+                default: begin
+                    out <= {s17_sign, 8'hFF, 23'h0};
+                end
+            endcase
+        end else if(s17_exponent_underflow) begin
+            overflow <= 1'b0;
+            underflow <= s17_has_grs_bits;
+            inexact <= 1'b1;
+            out <= {s17_sign, 8'h0, 23'h0};
+        end else begin
+            overflow <= 1'b0;
+            underflow <= 1'b0;
+            inexact <= s17_has_grs_bits;
+            out <= {s17_sign, s17_rounded_exponent[7:0],  s17_rounded_mantissa};
+        end
+    end
+end
+endmodule

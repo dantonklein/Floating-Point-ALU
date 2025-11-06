@@ -307,7 +307,7 @@ end
 
 logic[7:0] s3_exponent; 
 logic s3_mantissa_is_one;
-logic s3_division_by_zero
+logic s3_division_by_zero;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s3_mantissa_is_one <= 0;
@@ -364,7 +364,7 @@ logic s13_input_is_flushed;
 logic s13_special_case;
 logic s13_sign, s13_guard, s13_round, s13_sticky;
 //i stuffed all the signals that need to be propagated in the module since i already needed later versions of the rounding mode and sign
-mantissa_reciprocal_24bit s13_reciprocal(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_in.mantissa), .rounding_mode(s2_rounding_mode), .sign(s2_in.sign),
+mantissa_reciprocal s13_reciprocal(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_in.mantissa), .rounding_mode(s2_rounding_mode), .sign(s2_in.sign),
 .special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s13_reciprocal_out),
 .valid_data_out(s13_valid_data_out), .rounding_mode_out(s13_rounding_mode), .special_result_out(s13_special_result), .input_is_invalid_out(s13_input_is_invalid), 
 .input_is_flushed_out(s13_input_is_flushed), .special_case_out(s13_special_case), .sign_out(s13_sign));
@@ -418,6 +418,7 @@ always_ff @(posedge clk or posedge rst) begin
         inexact <= 0;
         invalid_operation <= 0;
         valid_data_out <= 0;
+        division_by_zero <= 0;
     end else begin
         invalid_operation <= s13_input_is_invalid;
         valid_data_out <= s13_valid_data_out;
