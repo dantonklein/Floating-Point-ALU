@@ -337,6 +337,7 @@ always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         for(int i = 0; i < 10; i++) begin
             s4_s13_new_exponents[i] <= 0;
+            s4_s13_division_by_zero[i] <= 0;
         end
     end else begin
         if(s3_new_exponent[8]) begin

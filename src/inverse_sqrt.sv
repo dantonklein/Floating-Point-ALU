@@ -335,5 +335,76 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 //stage 2 begin mantissa and exponent calculation
+logic[24:0] s2_mantissa_input;
+logic s2_exponent_is_even;
+always_comb begin
+    //if the biased exponent is even, the actual exponent is odd and therefore cant be divided by 2 evenly
+    //this requires the mantissa to be 2xed, making the exponent odd
+    s2_exponent_is_even = ~s2_in.exponent[0];
+    if(s2_exponent_is_even) begin
+        s2_mantissa_input = {1'b1, s2_in.mantissa, 1'b0};
+    end else begin
+        s2_mantissa_input = {2'b01, s2_in.mantissa};
+    end
+end
 
+logic[7:0] s3_exponent; 
+logic s3_exponent_is_even;
+logic s3_division_by_zero
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s3_exponent_is_even <= 0;
+        s3_exponent <= 0;
+        s3_division_by_zero <= 0;
+    end else begin
+        //if the mantissa is 1
+        s3_exponent_is_even <= s2_exponent_is_even;
+        s3_exponent <= s2_in.exponent;
+        s3_division_by_zero <= s2_division_by_zero;
+    end
+end
+
+//stage 3 new exponent calculation
+logic[7:0] s3_new_exponent;
+always_comb begin
+    if(s3_exponent_is_even) begin
+        s3_new_exponent = (9'd382 - s3_exponent) >> 1;
+    end else begin
+        s3_new_exponent = (9'd381 - s3_exponent) >> 1;
+    end
+end
+logic s4_s17_division_by_zero[14];
+logic[7:0] s4_s17_new_exponents[14];
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        for(int i = 0; i < 14; i++) begin
+            s4_s17_new_exponents[i] <= 0;
+            s4_s17_division_by_zero[i] <= 0;
+        end
+    end else begin
+        s4_s17_new_exponents[0] <= s3_new_exponent;
+        s4_s17_division_by_zero[0] <= s3_division_by_zero;
+        for(int i = 0; i < 9; i++) begin
+            s4_s17_new_exponents[i+1] <= s4_s17_new_exponents[i];
+            s4_s17_division_by_zero[i+1] <= s4_s17_division_by_zero[i];
+        end
+    end
+end
+
+//stage 17, final rounding
+logic[55:0] s17_reciprocal_out;
+logic[22:0] s17_mantissa_pre_round;
+logic s17_valid_data_out;
+logic[2:0] s17_rounding_mode;
+fp_32b_t s17_special_result;
+logic s17_input_is_invalid;
+logic s17_input_is_flushed;
+logic s17_special_case;
+logic s17_sign, s17_guard, s17_round, s17_sticky;
+
+mantissa_inverse_sqrt s17_inverse_square_root(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_mantissa_input), .rounding_mode(s2_rounding_mode), .sign(s2_in.sign),
+.special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s17_reciprocal_out),
+.valid_data_out(s17_valid_data_out), .rounding_mode_out(s17_rounding_mode), .special_result_out(s17_special_result), .input_is_invalid_out(s17_input_is_invalid), 
+.input_is_flushed_out(s17_input_is_flushed), .special_case_out(s17_special_case), .sign_out(s17_sign));
 endmodule;
