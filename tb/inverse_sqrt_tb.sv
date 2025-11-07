@@ -61,7 +61,7 @@ class fp_item;
     endfunction
 endclass
 
-module reciprocal_tb #(
+module inverse_sqrt_tb #(
     parameter int NUM_TESTS = 100
 );
 
