@@ -246,7 +246,7 @@ assign special_case_out = special_cases[15];
 
 endmodule
 
-module fp_reciprocal_pipeline (
+module fp_inverse_sqrt_pipeline (
     input logic clk, rst, valid_data_in,
     input logic[31:0] in,
     input logic[2:0] rounding_mode,
@@ -395,7 +395,7 @@ always_ff @(posedge clk or posedge rst) begin
             s4_s17_new_exponents[0] <= s3_new_exponent[7:0];
         end
         s4_s17_division_by_zero[0] <= s3_division_by_zero;
-        for(int i = 0; i < 9; i++) begin
+        for(int i = 0; i < 13; i++) begin
             s4_s17_new_exponents[i+1] <= s4_s17_new_exponents[i];
             s4_s17_division_by_zero[i+1] <= s4_s17_division_by_zero[i];
         end
