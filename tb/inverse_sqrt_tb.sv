@@ -99,11 +99,11 @@ module inverse_sqrt_tb #(
             else $fatal(1, "ERROR: Randomization failed.");
             @(posedge clk);
             if(i == 50) begin
-                in <= {1'b0, 8'b01111111, 23'd0};
+                in = {1'b0, 8'b01111111, 23'd0};
             end else if(i == 51) begin
-                in <= {1'b0, 8'b10000000, 23'd0};
+                in = {1'b0, 8'b10000000, 23'd0};
             end else begin
-                in <= {1'b0, item.in_bits[30:0]};
+                in = {1'b0, item.in_bits[30:0]};
             end
             //rounding_mode <= item.rounding_mode;
             rounding_mode <= RNE;
