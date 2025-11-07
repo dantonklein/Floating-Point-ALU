@@ -317,7 +317,7 @@ always_ff @(posedge clk or posedge rst) begin
         //when number is negative
         end else if(s1_in_init.sign) begin
             s2_special_case <= 1;
-            s2_special_result <= 32'h7FC00000;
+            s2_special_result <= 32'hFFC00000;
         //when infinity
         end else if(s1_in_isinfinite) begin
             //propagate qnan, exception flag is raised 
@@ -371,12 +371,13 @@ end
 //stage 3 new exponent calculation
 logic[8:0] s3_new_exponent;
 always_comb begin
-    if(s3_mantissa_is_one && ~s3_exponent_is_even) begin
-        s3_new_exponent = ((9'd381 - s3_exponent) >> 1) + 9'd1;
-    end else if(s3_exponent_is_even) begin
-        s3_new_exponent = (9'd382 - s3_exponent) >> 1;
+    // if(s3_mantissa_is_one && ~s3_exponent_is_even) begin
+    //     s3_new_exponent = ((9'd381 - s3_exponent) >> 1) + 9'd1;
+    // end else 
+    if(s3_exponent_is_even) begin
+        s3_new_exponent = ((9'd382 - s3_exponent) >> 1) + 9'd1;
     end else begin
-        s3_new_exponent = (9'd381 - s3_exponent) >> 1;
+        s3_new_exponent = ((9'd381 - s3_exponent) >> 1) + 9'd1;
     end
 end
 logic s4_s17_division_by_zero[14];
