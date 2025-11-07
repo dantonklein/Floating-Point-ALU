@@ -375,9 +375,9 @@ always_comb begin
     //     s3_new_exponent = ((9'd381 - s3_exponent) >> 1) + 9'd1;
     // end else 
     if(s3_exponent_is_even) begin
-        s3_new_exponent = ((9'd382 - s3_exponent) >> 1) + 9'd1;
+        s3_new_exponent = ((9'd382 - s3_exponent) >> 1) - 9'd1;
     end else begin
-        s3_new_exponent = ((9'd381 - s3_exponent) >> 1) + 9'd1;
+        s3_new_exponent = ((9'd381 - s3_exponent) >> 1) - 9'd1;
     end
 end
 logic s4_s17_division_by_zero[14];

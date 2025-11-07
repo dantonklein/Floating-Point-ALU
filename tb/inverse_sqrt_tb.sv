@@ -108,7 +108,7 @@ module inverse_sqrt_tb #(
             //rounding_mode <= item.rounding_mode;
             rounding_mode <= RNE;
             valid_data_in <= 1;
-            expected_out = 1.0 / $sqrt($bitstoshortreal(item.in_bits));
+            expected_out = 1.0 / $sqrt($bitstoshortreal(in));
             @(posedge clk);
             $display("[%0t] Test %0d: in=0x%08h infloat=%f rmode=%0d", $time, i, in, $bitstoshortreal(in), rounding_mode);
             valid_data_in <= 0;
