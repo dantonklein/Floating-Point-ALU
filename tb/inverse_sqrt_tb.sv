@@ -69,7 +69,7 @@ module inverse_sqrt_tb #(
     logic [31:0] in;
     logic [2:0] rounding_mode;
     logic [31:0] out;
-    logic overflow, underflow, inexact, invalid_operation;
+    logic overflow, underflow, inexact, invalid_operation, division_by_zero;
     logic valid_data_out;
    // logic normalized_mantissa_lsb, normalized_guard, normalized_round, normalized_sticky, round_up;
 
