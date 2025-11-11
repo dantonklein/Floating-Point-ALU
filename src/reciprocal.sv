@@ -1,11 +1,11 @@
 import fp_pkg::*;
 
-module mantissa_reciprocal_27bit_LUT (
+module mantissa_reciprocal_LUT (
     input logic clk, rst,
     input logic[7:0] in,
-    output logic[26:0] out
+    output logic[23:0] out
 );
-    logic[26:0] lut[256];
+    logic[23:0] lut[256];
 
     initial begin
         $readmemh("reciprocal_lut256.mem", lut);
@@ -100,8 +100,10 @@ assign s0_input_slice = in[22:15];
 
 //fixed point Q1.26
 logic[26:0] s1_x_n, s2_x_n, s3_x_n, s4_x_n;
+logic[23:0] s1_x_n_pre_extend;
 
-mantissa_reciprocal_27bit_LUT s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
+mantissa_reciprocal_LUT s0_reciprocal_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n_pre_extend));
+assign s1_x_n = {s1_x_n_pre_extend, 3'b000};
 
 logic[26:0] s1_a, s2_a, s3_a, s4_a, s5_a, s6_a;
 always_ff @(posedge clk or posedge rst) begin

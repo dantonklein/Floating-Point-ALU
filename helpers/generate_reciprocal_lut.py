@@ -21,15 +21,13 @@ def generate_reciprocal_lut():
         
         # Calculate reciprocal
         reciprocal = 1.0 / input_value
-        # Convert directly to Q1.26 fixed point (27 bits)
-        # Q1.26 means: 1 integer bit, 26 fractional bits
-        # Multiply by 2^26 to convert to fixed-point
-        fixed_point_27bit = int(reciprocal * (1 << 26))
+        # Convert directly to Q1.23
+        out = int(reciprocal * (1 << 23))
         
-        # Clamp to 27 bits (shouldn't be necessary but safe)
-        fixed_point_27bit = fixed_point_27bit & 0x7FFFFFF
+        # Clamp to 24 bits (shouldn't be necessary but safe)
+        out = out & 0xFFFFFF
         
-        lut.append(fixed_point_27bit)
+        lut.append(out)
         
     return lut
 

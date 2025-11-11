@@ -1,35 +1,41 @@
 import fp_pkg::*;
 
-module mantissa_inverse_sqrt_28bit_LUT (
+module mantissa_inverse_sqrt_LUT (
     input logic clk, rst,
     input logic[7:0] in,
-    output logic[27:0] out
+    input logic exponent_is_even,
+    output logic[23:0] out
 );
-    logic[27:0] lut[256];
-
+    logic[23:0] lut_normal[256];
+    logic[23:0] lut_double[256];
     initial begin
-        $readmemh("inverse_sqrt_lut256.mem", lut);
+        $readmemh("inverse_sqrt_lut256_normal.mem", lut_normal);
+        $readmemh("inverse_sqrt_lut256_double.mem", lut_double);
     end
-
+    logic[23:0] lut_normal_out, lut_double_out;
     always_ff @(posedge clk) begin
         if(rst) begin
-            out <= 0;
+            lut_normal_out <= 0;
+            lut_double_out <= 0;
         end else begin
-            out <= lut[in];
+            lut_normal_out <= lut_normal[in];
+            lut_double_out <= lut_double[in];
         end
     end
+    assign out = exponent_is_even ? lut_double_out : lut_normal_out;
 endmodule
 
 module mantissa_inverse_sqrt (
     input logic clk, rst, valid_data_in,
     //input is Q2.23
-    input logic[24:0] in,
+    input logic[22:0] in,
     input logic[2:0] rounding_mode,
     input logic sign,
     input logic[31:0] special_result,
     input logic input_is_invalid,
     input logic input_is_flushed,
     input logic special_case,
+    input logic exponent_is_even,
     output logic[55:0] out,
     output logic valid_data_out,
     output logic[2:0] rounding_mode_out,
@@ -93,14 +99,19 @@ generate
         end
 end
 endgenerate
-
+//two situations
+//input is in [2, 4) exponent is even
+//input is in [1, 2) exponent is odd
 //stage 0: read from lookup table
 logic[7:0] s0_input_slice;
-assign s0_input_slice = in[24:17];
+assign s0_input_slice = in[22:15];
 
 //fixed point Q2.26
 logic[27:0] s1_x_n, s2_x_n, s3_x_n, s4_x_n, s5_x_n, s6_x_n;
-mantissa_inverse_sqrt_28bit_LUT s0_inverse_sqrt_lut(.clk(clk), .rst(rst), .in(s0_input_slice), .out(s1_x_n));
+//fixed point Q2.23
+logic[23:0] s1_x_n_pre_extend;
+mantissa_inverse_sqrt_LUT s0_inverse_sqrt_lut(.clk(clk), .rst(rst), .exponent_is_even(exponent_is_even), .in(s0_input_slice), .out(s1_x_n_pre_extend));
+assign s1_x_n = {1'b0, s1_x_n_pre_extend, 3'b000};
 
 //fixed point Q2.26
 logic[27:0] s1_a, s2_a, s3_a, s4_a, s5_a, s6_a, s7_a, s8_a, s9_a, s10_a;
@@ -117,7 +128,7 @@ always_ff @(posedge clk or posedge rst) begin
         s9_a <= 0;
         s10_a <= 0;
     end else begin
-        s1_a <= {in, 3'b000};
+        s1_a <= exponent_is_even ? {2'b1, in, 4'b0000} : {2'b01, in, 3'b000};
         s2_a <= s1_a;
         s3_a <= s2_a;
         s4_a <= s3_a;
@@ -337,18 +348,11 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 //stage 2 begin mantissa and exponent calculation
-logic[24:0] s2_mantissa_input;
 logic s2_exponent_is_even;
-always_comb begin
-    //if the biased exponent is even, the actual exponent is odd and therefore cant be divided by 2 evenly
-    //this requires the mantissa to be 2xed, making the exponent odd
-    s2_exponent_is_even = ~s2_in.exponent[0];
-    if(s2_exponent_is_even) begin
-        s2_mantissa_input = {1'b1, s2_in.mantissa, 1'b0};
-    end else begin
-        s2_mantissa_input = {2'b01, s2_in.mantissa};
-    end
-end
+
+//if the biased exponent is even, the actual exponent is odd and therefore cant be divided by 2 evenly
+//this requires the mantissa to be 2xed, making the exponent odd
+assign s2_exponent_is_even = ~s2_in.exponent[0];
 
 logic[7:0] s3_exponent; 
 logic s3_mantissa_is_one;
@@ -415,8 +419,8 @@ logic s17_input_is_flushed;
 logic s17_special_case;
 logic s17_sign, s17_guard, s17_round, s17_sticky;
 
-mantissa_inverse_sqrt s17_inverse_square_root(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_mantissa_input), .rounding_mode(s2_rounding_mode), .sign(s2_in.sign),
-.special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .out(s17_reciprocal_out),
+mantissa_inverse_sqrt s17_inverse_square_root(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), .in(s2_in.mantissa), .rounding_mode(s2_rounding_mode), .sign(s2_in.sign),
+.special_result(s2_special_result), .input_is_invalid(s2_input_is_invalid), .input_is_flushed(s2_input_is_flushed), .special_case(s2_special_case), .exponent_is_even(s2_exponent_is_even), .out(s17_reciprocal_out),
 .valid_data_out(s17_valid_data_out), .rounding_mode_out(s17_rounding_mode), .special_result_out(s17_special_result), .input_is_invalid_out(s17_input_is_invalid), 
 .input_is_flushed_out(s17_input_is_flushed), .special_case_out(s17_special_case), .sign_out(s17_sign));
 
