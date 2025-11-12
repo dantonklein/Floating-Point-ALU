@@ -40,7 +40,7 @@ end
 //flush to zero and invalid input handling
 logic s1_input_is_invalid;
 logic s1_input_is_flushed;
-assign s1_input_is_invalid = s1_in1_issnan | s1_in2_issnan | (s1_in1_iszero & s1_in2_isinfinite) | (s1_in2_iszero & s1_in1_isinfinite);
+assign s1_input_is_invalid = s1_in1_issnan | s1_in2_issnan | ((s1_in1_iszero | s1_in1_isdenorm) & s1_in2_isinfinite) | ((s1_in2_iszero | s1_in2_isdenorm) & s1_in1_isinfinite);
 assign s1_input_is_flushed = s1_in1_isdenorm | s1_in2_isdenorm;
 
 fp_32b_t s2_special_result, s2_in1, s2_in2;
