@@ -331,14 +331,13 @@ always_ff @(posedge clk or posedge rst) begin
             s2_special_result <= 32'hFFC00000;
         //when infinity
         end else if(s1_in_isinfinite) begin
-            //propagate qnan, exception flag is raised 
             s2_special_case <= 1;
-            s2_special_result <= {s1_in_init.sign,31'd0};
+            s2_special_result <= 0;
 
         //when zero
         end else if(s1_in_iszero | s1_in_isdenorm) begin
             s2_special_case <= 1;
-            s2_special_result <= {s1_in_init.sign,31'h7F800000};
+            s2_special_result <= 32'h7F800000;
 
         end else begin
             s2_special_case <= 0;
@@ -355,17 +354,14 @@ logic s2_exponent_is_even;
 assign s2_exponent_is_even = ~s2_in.exponent[0];
 
 logic[7:0] s3_exponent; 
-logic s3_mantissa_is_one;
 logic s3_exponent_is_even;
 logic s3_division_by_zero;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
-        s3_mantissa_is_one <= 0;
         s3_exponent_is_even <= 0;
         s3_exponent <= 0;
         s3_division_by_zero <= 0;
     end else begin
-        s3_mantissa_is_one <= (s2_in.mantissa == 23'd0);
         s3_exponent_is_even <= s2_exponent_is_even;
         s3_exponent <= s2_in.exponent;
         s3_division_by_zero <= s2_division_by_zero;
@@ -375,13 +371,10 @@ end
 //stage 3 new exponent calculation
 logic[8:0] s3_new_exponent;
 always_comb begin
-    // if(s3_mantissa_is_one && ~s3_exponent_is_even) begin
-    //     s3_new_exponent = ((9'd381 - s3_exponent) >> 1) + 9'd1;
-    // end else 
     if(s3_exponent_is_even) begin
-        s3_new_exponent = ((9'd382 - s3_exponent) >> 1) - 9'd1;
+        s3_new_exponent = ((9'd380 - s3_exponent) >> 1);
     end else begin
-        s3_new_exponent = ((9'd381 - s3_exponent) >> 1) - 9'd1;
+        s3_new_exponent = ((9'd379 - s3_exponent) >> 1);
     end
 end
 logic s4_s17_division_by_zero[14];
