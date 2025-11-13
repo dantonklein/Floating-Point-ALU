@@ -26,6 +26,7 @@ logic s1_in1_issnan, s1_in2_issnan, s1_in3_issnan;
 logic s1_in1_isdenorm, s1_in2_isdenorm, s1_in3_isdenorm;
 logic s1_in1_finite, s1_in2_finite, s1_in3_finite;
 logic s1_in1_positive, s1_in2_positive, s1_in3_positive;
+logic s1_in1_x_in2_sign;
 //special cases for input
 always_comb begin
     s1_in1_iszero = (s1_in1_init.exponent == '0) & (s1_in1_init.mantissa == '0);
@@ -41,7 +42,6 @@ always_comb begin
     s1_in2_isqnan = (s1_in2_init.exponent == '1) & (s1_in2_init.mantissa != '0) & s1_in2_init.mantissa[22];
     s1_in2_issnan = (s1_in2_init.exponent == '1) & (s1_in2_init.mantissa != '0) & ~s1_in2_init.mantissa[22];
     s1_in2_isdenorm = (s1_in2_init.exponent == '0) & (s1_in2_init.mantissa != '0);
-    s1_in2_finite = ~s1_in2_iszero & ~s1_in2_isinfinite & ~s1_in2_isqnan & ~s1_in2_issnan & ~s1_in2_isdenorm;
     s1_in2_positive = ~s1_in2_init.sign;
 
     s1_in3_iszero = (s1_in3_init.exponent == '0) & (s1_in3_init.mantissa == '0);
@@ -49,21 +49,19 @@ always_comb begin
     s1_in3_isqnan = (s1_in3_init.exponent == '1) & (s1_in3_init.mantissa != '0) & s1_in3_init.mantissa[22];
     s1_in3_issnan = (s1_in3_init.exponent == '1) & (s1_in3_init.mantissa != '0) & ~s1_in3_init.mantissa[22];
     s1_in3_isdenorm = (s1_in3_init.exponent == '0) & (s1_in3_init.mantissa != '0);
-    s1_in3_finite = ~s1_in3_iszero & ~s1_in3_isinfinite & ~s1_in3_isqnan & ~s1_in3_issnan & ~s1_in3_isdenorm;
     s1_in3_positive = ~s1_in3_init.sign;
 
+    s1_in1_x_in2_negative = s1_in1_init.sign ^ s1_in2_init.sign;
 end
 //flush to zero and invalid input handling
 logic s1_input_is_invalid;
 logic s1_input_is_flushed;
 assign s1_input_is_invalid = s1_in1_issnan | s1_in2_issnan | s1_in3_issnan | 
 ((s1_in1_iszero | s1_in1_isdenorm) & s1_in2_isinfinite) | ((s1_in2_iszero | s1_in2_isdenorm) & s1_in1_isinfinite) |
-((s1_in1_isinfinite & s1_in2_isinfinite & s1_in3_isinfinite) & 
-((s1_in1_init.sign & s1_in2_init.sign & ~s1_in3_init.sign) | 
-((s1_in1_init.sign ^ s1_in2_init.sign) & s1_in3_init.sign) | 
-(~s1_in1_init.sign & ~s1_in2_init.sign & ~s1_in3_init.sign))) |
-();
+(((s1_in1_isinfinite | s1_in2_isinfinite) & s1_in3_isinfinite) & (s1_in1_x_in2_negative ^ s1_in3_positive));
 assign s1_input_is_flushed = s1_in1_isdenorm | s1_in2_isdenorm | s1_in3_isdenorm;
+
+logic s1_result_is_pos_infinity, s1_result_is_neg_infinity, s1_result_is_pos_zero, s1_result_is_neg_zero;
 
 fp_32b_t s2_special_result, s2_in1, s2_in2;
 logic s2_input_is_invalid;
