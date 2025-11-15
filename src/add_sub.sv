@@ -153,13 +153,12 @@ end
 
 //determine the larger input, calculate shift amount, and shift smaller input
 logic s2_in1_is_larger;
-logic[7:0] s2_shift_amount_temp; //temp value before it gets cut off at 24
-logic[4:0] s2_shift_amount;
+logic[7:0] s2_shift_amount; 
 logic s2_op_is_subtraction;
 fp_32b_t s2_larger;
 logic [22:0] s2_smaller_mantissa;
 
-logic[50:0] s2_aligned_smaller_mantissa;
+logic[47:0] s2_aligned_smaller_mantissa;
 logic s2_alignment_sticky_bit;
 always_comb begin
     s2_op_is_subtraction = s2_in1.sign ^ s2_in2.sign;
@@ -168,11 +167,9 @@ always_comb begin
     (s2_in1.exponent > s2_in2.exponent) | 
     ((s2_in1.exponent == s2_in2.exponent) & ({1'b1, s2_in1.mantissa} >= {1'b1, s2_in2.mantissa}));
 
-    if(s2_in1_is_larger) s2_shift_amount_temp = s2_in1.exponent - s2_in2.exponent;
-    else s2_shift_amount_temp = s2_in2.exponent - s2_in1.exponent;
+    if(s2_in1_is_larger) s2_shift_amount = s2_in1.exponent - s2_in2.exponent;
+    else s2_shift_amount = s2_in2.exponent - s2_in1.exponent;
 
-    if(s2_shift_amount_temp > 24) s2_shift_amount = 5'd24;
-    else s2_shift_amount = s2_shift_amount_temp[4:0];
 
     if(s2_in1_is_larger) begin
         s2_larger = s2_in1;
@@ -182,13 +179,15 @@ always_comb begin
         s2_larger = s2_in2;
         s2_smaller_mantissa = s2_in1.mantissa;
     end
-    //allign smaller number's exponent
-    s2_aligned_smaller_mantissa = {1'b1, s2_smaller_mantissa,27'd0} >> s2_shift_amount;
-    if(s2_shift_amount) s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[23:0];
-    else s2_alignment_sticky_bit = 0;
+    //align smaller number's exponent
+    s2_aligned_smaller_mantissa = {1'b1, s2_smaller_mantissa,24'd0} >> s2_shift_amount;
 
-    //s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[23:0];
-    //s2_alignment_sticky_bit = (| s2_aligned_smaller_mantissa[23:0]) | (s2_shift_amount == 5'd24);
+    if(s2_shift_amount >= 48) begin
+        s2_alignment_sticky_bit = 1;
+    end else begin
+        s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[23:0];
+    end
+    
 end
 
 //store stage 2 values
@@ -199,7 +198,7 @@ logic s3_special_case;
 logic s3_valid_data_in;
 logic[2:0] s3_rounding_mode;
 
-logic[26:0] s3_aligned_smaller_mantissa;
+logic[23:0] s3_aligned_smaller_mantissa;
 logic s3_alignment_sticky_bit;
 fp_32b_t s3_larger_number;
 logic s3_op_is_subtraction;
@@ -224,7 +223,7 @@ always_ff @(posedge clk or posedge rst) begin
         s3_special_case <= s2_special_case;
         s3_valid_data_in <= s2_valid_data_in;
         s3_rounding_mode <= s2_rounding_mode;
-        s3_aligned_smaller_mantissa <= s2_aligned_smaller_mantissa[50:24]; 
+        s3_aligned_smaller_mantissa <= s2_aligned_smaller_mantissa[47:24]; 
         s3_alignment_sticky_bit <= s2_alignment_sticky_bit;
         s3_larger_number <= s2_larger;
         s3_op_is_subtraction <= s2_op_is_subtraction;
@@ -238,12 +237,12 @@ logic s3_exact_zero;
 logic [26:0] s3_adder_input1, s3_adder_input2;
 logic [26:0] s3_subtractor_input1, s3_subtractor_input2;
 assign s3_adder_input1 = {1'b1, s3_larger_number.mantissa, 3'b000};
-assign s3_adder_input2 = s3_aligned_smaller_mantissa;
+assign s3_adder_input2 = {s3_aligned_smaller_mantissa, 3'b000};
 
 KSA_nbits #(.WIDTH(27)) s3_adder (.in1(s3_adder_input1), .in2(s3_adder_input2), .out(s3_addition_result_sum), .cout(s3_addition_result_carry));
 
 assign s3_subtractor_input1 = {1'b1, s3_larger_number.mantissa, 3'b000};
-assign s3_subtractor_input2 = ~s3_aligned_smaller_mantissa + 1'b1;
+assign s3_subtractor_input2 = ~{s3_aligned_smaller_mantissa, 3'b000} + 1'b1;
 
 KSA_nbits #(.WIDTH(27)) s3_subtractor (.in1(s3_subtractor_input1), .in2(s3_subtractor_input2), .out(s3_subtraction_result));
 

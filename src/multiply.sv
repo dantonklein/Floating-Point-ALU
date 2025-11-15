@@ -148,49 +148,44 @@ logic[47:0] s4_multiplier_out;
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s3_special_result <= 0;
-        s3_valid_data_in <= 0;
         s3_input_is_invalid <= 0;
         s3_input_is_flushed <= 0;
         s3_special_case <= 0;
         s3_rounding_mode <= 0;
-
+        s3_valid_data_in <= 0;
         s3_exponent_add <= 0;
         s3_sign_bit <= 0;
 
         s4_special_result <= 0;
-        s4_valid_data_in <= 0;
         s4_input_is_invalid <= 0;
         s4_input_is_flushed <= 0;
         s4_special_case <= 0;
         s4_rounding_mode <= 0;
-
+        s4_valid_data_in <= 0;
         s4_sign_bit <= 0;
         s4_exponent_add <= 0;
     end else begin
         s3_special_result <= s2_special_result;
-        s3_valid_data_in <= s2_valid_data_in;
         s3_input_is_invalid <= s2_input_is_invalid;
         s3_input_is_flushed <= s2_input_is_flushed;
         s3_special_case <= s2_special_case;
-        s3_rounding_mode <= rounding_mode;
-
+        s3_rounding_mode <= s2_rounding_mode;
+        s3_valid_data_in <= s2_valid_data_in;
         s3_exponent_add <= s2_exponent_add;
         s3_sign_bit <= s2_sign_bit;
 
         s4_special_result <= s3_special_result;
-        s4_valid_data_in <= s3_valid_data_in;
         s4_input_is_invalid <= s3_input_is_invalid;
         s4_input_is_flushed <= s3_input_is_flushed;
         s4_special_case <= s3_special_case;
         s4_rounding_mode <= s3_rounding_mode;
-
+        s4_valid_data_in <= s3_valid_data_in;
         s4_exponent_add <= s3_exponent_add;
         s4_sign_bit <= s3_sign_bit;
     end
 end
 
-Dadda_Multiplier_24bit_pipelined s2_4_multiplier(.clk(clk), .rst(rst), .valid_data_in(s2_valid_data_in), 
-.in1(s2_multiplier_in1), .in2(s2_multiplier_in2), .out(s4_multiplier_out), .valid_data_out(s4_valid_data_in));
+Dadda_Multiplier_24bit_pipelined s2_s4_multiplier(.clk(clk), .rst(rst), .in1(s2_multiplier_in1), .in2(s2_multiplier_in2), .out(s4_multiplier_out));
 
 //handle shifting
 logic[22:0] s4_normalized_mantissa;
