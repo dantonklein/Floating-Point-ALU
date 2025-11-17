@@ -61,7 +61,7 @@ logic s1_input_is_invalid;
 logic s1_input_is_flushed;
 assign s1_input_is_invalid = s1_in1_issnan | s1_in2_issnan | s1_in3_issnan | 
 ((s1_in1_iszero | s1_in1_isdenorm) & s1_in2_isinfinite) | ((s1_in2_iszero | s1_in2_isdenorm) & s1_in1_isinfinite) |
-(((s1_in1_isinfinite | s1_in2_isinfinite) & s1_in3_isinfinite) & (s1_in1_x_in2_negative ^ s1_in3_positive));
+(((s1_in1_isinfinite | s1_in2_isinfinite) & s1_in3_isinfinite) & (s1_in1_x_in2_negative ^ s1_in3_init.sign));
 assign s1_input_is_flushed = s1_in1_isdenorm | s1_in2_isdenorm | s1_in3_isdenorm;
 
 logic s1_result_is_pos_infinity, s1_result_is_neg_infinity, s1_result_is_pos_zero, s1_result_is_neg_zero;
@@ -234,10 +234,10 @@ logic[26:0] s4_mult_out_truncated;
 logic signed[9:0] s4_mult_normalized_exponent;
 always_comb begin
     if(s4_multiplier_out[47]) begin
-        s4_mult_out_truncated = s4_multiplier_out[46:20];
+        s4_mult_out_truncated = s4_multiplier_out[47:21];
         s4_mult_normalized_exponent = s4_mult_exponent_add + 10'sd1;
     end else begin
-        s4_mult_out_truncated = s4_multiplier_out[45:19];
+        s4_mult_out_truncated = s4_multiplier_out[46:20];
         s4_mult_normalized_exponent = s4_mult_exponent_add;
     end
 end
@@ -259,7 +259,7 @@ always_comb begin
     s4_op_is_subtraction = s4_mult_sign_bit ^ s4_in3.sign;
 
     s4_in3_mantissa_extended = {1'b1, s4_in3.mantissa, 3'b000};
-    s4_in3_exponent_extended = {2'b00, s4_in3.exponent};
+    s4_in3_exponent_extended = $signed({2'b00, s4_in3.exponent});
     s4_mult_out_is_larger = (s4_mult_normalized_exponent > s4_in3_exponent_extended) |
     ((s4_mult_out_truncated >= s4_in3_mantissa_extended) & (s4_mult_normalized_exponent == s4_in3_exponent_extended));
 
@@ -445,7 +445,7 @@ end
 
 //forward relevant result
 logic[22:0] s6_normalized_mantissa;
-logic[8:0] s6_normalized_exponent;
+logic signed[9:0] s6_normalized_exponent;
 logic s6_normalized_guard, s6_normalized_round, s6_normalized_sticky;
 always_comb begin
     if(s6_op_is_subtraction) begin

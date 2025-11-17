@@ -144,7 +144,6 @@ logic s4_sign_bit;
 logic signed[9:0] s4_exponent_add;
 logic[47:0] s4_multiplier_out;
 
-
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         s3_special_result <= 0;
