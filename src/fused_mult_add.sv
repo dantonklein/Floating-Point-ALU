@@ -324,7 +324,8 @@ always_ff @(posedge clk or posedge rst) begin
         s5_special_case <= s4_special_case;
         s5_valid_data_in <= s4_valid_data_in;
         s5_rounding_mode <= s4_rounding_mode;
-        s5_aligned_smaller_mantissa <= s4_aligned_smaller_mantissa[53:27]; 
+        //s5_aligned_smaller_mantissa <= s4_aligned_smaller_mantissa[53:27];
+        s5_aligned_smaller_mantissa <= s4_aligned_smaller_mantissa[26:0];
         s5_alignment_sticky_bit <= s4_alignment_sticky_bit;
         s5_larger_number_exponent <= s4_larger_number_exponent;
         s5_larger_mantissa <= s4_larger_mantissa;
@@ -479,8 +480,8 @@ always_comb begin
         s6_rounded_exponent = s6_normalized_exponent;
     end
 
-    s6_exponent_overflow = (s6_normalized_exponent > 10'sd254) & !s6_op_is_subtraction;
-    s6_exponent_underflow = ((s6_rounded_exponent <= 0)) & s6_op_is_subtraction;
+    s6_exponent_overflow = (s6_normalized_exponent > 10'sd254);
+    s6_exponent_underflow = ((s6_rounded_exponent <= 0));
     s6_has_grs_bits = s6_normalized_guard | s6_normalized_round | s6_normalized_sticky;
 
 end

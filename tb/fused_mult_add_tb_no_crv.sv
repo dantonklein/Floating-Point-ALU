@@ -28,9 +28,9 @@ module fused_mult_add_tb_no_crv #(
         @(posedge clk);
         rst <= 0;
         @(posedge clk);
-        in1 = 32'hefb90df0;
-        in2 = 32'h0896602c;
-        in3 = 32'h991e1d66;
+        in1 = {1'b0, 8'd127, 23'h000000};
+        in2 = {1'b1, 8'd145, 23'h200000};
+        in3 = {1'b1, 8'd151, 23'h800000};
         //rounding_mode <= item.rounding_mode;
         rounding_mode <= RNE;
         valid_data_in <= 1;
