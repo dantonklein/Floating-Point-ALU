@@ -38,11 +38,11 @@ assign both_zero = in1_iszero & in2_iszero;
 
 generate
 
-if(operation == OP_EQ) begin : gen_Equal
+if(OPERATION == OP_EQ) begin : gen_Equal
     assign operation_result = (in1==in2) | both_zero;
-end else if(operation == OP_NE) begin : gen_Not_Equal
+end else if(OPERATION == OP_NE) begin : gen_Not_Equal
     assign operation_result = in1!=in2 & ~both_zero;
-end else if(operation == OP_LT) begin : gen_Less_Than
+end else if(OPERATION == OP_LT) begin : gen_Less_Than
     logic less_than;
     always_comb begin
         case({in2_init.sign, in1_init.sign})
@@ -61,7 +61,7 @@ end else if(operation == OP_LT) begin : gen_Less_Than
         endcase
         operation_result = less_than & ~both_zero;
     end
-end else if(operation == OP_LE) begin : gen_Less_Than_Or_Equal_To
+end else if(OPERATION == OP_LE) begin : gen_Less_Than_Or_Equal_To
     logic less_than_or_equal_to;
     always_comb begin
         case({in2_init.sign, in1_init.sign})
@@ -80,7 +80,7 @@ end else if(operation == OP_LE) begin : gen_Less_Than_Or_Equal_To
         endcase
         operation_result = less_than_or_equal_to | both_zero;
     end
-end else if(operation == OP_GT) begin : gen_Greater_Than
+end else if(OPERATION == OP_GT) begin : gen_Greater_Than
     logic greater_than;
     always_comb begin
         case({in2_init.sign, in1_init.sign})
@@ -99,7 +99,7 @@ end else if(operation == OP_GT) begin : gen_Greater_Than
         endcase
         operation_result = greater_than & ~both_zero;
     end
-end else if(operation == OP_GE) begin : gen_Greater_Than_Or_Equal_To
+end else if(OPERATION == OP_GE) begin : gen_Greater_Than_Or_Equal_To
     logic greater_than_or_equal_to;
     always_comb begin
         case({in2_init.sign, in1_init.sign})
@@ -126,7 +126,7 @@ endgenerate
 
 logic result;
 generate
-if(operation == OP_NE) begin
+if(OPERATION == OP_NE) begin
     assign result = (in1_isnan | in2_isnan) ? 1 : operation_result;
 end
 else begin
