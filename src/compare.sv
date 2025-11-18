@@ -1,11 +1,10 @@
 import fp_pkg::*;
 
 module fp_compare #(
-    parameter logic[2:0] operation = OP_EQ
+    parameter logic[2:0] OPERATION = OP_EQ
 )(
     input logic clk, rst, valid_data_in,
     input logic[31:0] in1, in2,
-    input logic[2:0] rounding_mode,
     output logic out,
     output logic invalid_operation,
     output logic valid_data_out
@@ -135,15 +134,16 @@ else begin
 end
 endgenerate
 
-    always_ff @(posedge clk or posedge rst) begin
-        if(rst) begin
-            out <= 0;
-            invalid_operation <= 0;
-            valid_data_out <= 0;
-        end else begin
-            out <= result;
-            invalid_operation <= in1_issnan | in2_issnan;
-            valid_data_out <= valid_data_in;
-        end
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        out <= 0;
+        invalid_operation <= 0;
+        valid_data_out <= 0;
+    end else begin
+        out <= result;
+        invalid_operation <= in1_issnan | in2_issnan;
+        valid_data_out <= valid_data_in;
     end
+end
+
 endmodule
