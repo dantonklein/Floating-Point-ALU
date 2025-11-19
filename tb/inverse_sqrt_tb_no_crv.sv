@@ -22,8 +22,6 @@ module inverse_sqrt_tb_no_crv #(
         forever #5 clk <= ~clk;
     end
 
-    //int passed = 0;
-    //int failed = 0;
     shortreal expected_out;
     initial begin
         $timeformat(-9, 0, " ns");
