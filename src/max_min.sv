@@ -125,9 +125,6 @@ logic nan, both_zero;
 assign nan = in1_isnan | in2_isnan;
 assign both_zero = in1_iszero & in2_iszero;
 
-
-
-
 logic comparison; //1 = propagate in1, 0 = propagate in2
 generate 
     if(magnitude) begin : absolute_min
