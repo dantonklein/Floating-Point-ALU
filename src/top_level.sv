@@ -12,6 +12,7 @@ import fp_pkg::*;
 module floating_point_alu (
     input logic clk, rst, valid_data_in,
     input logic[31:0] in1, in2, in3,
+    input logic[2:0] rounding_mode,
     input logic[2:0] op_sel,
 
     output logic[31:0] out,
@@ -53,7 +54,7 @@ fp_division_pipeline division (
     .in1(in1), .in2(in2), .rounding_mode(rounding_mode),
     .out(out_division), .overflow(overflow_division), .underflow(underflow_division), 
     .inexact(inexact_division), .invalid_operation(invalid_operation_division),
-    .valid_data_out(valid_data_out_division)
+    .division_by_zero(division_by_zero_division), .valid_data_out(valid_data_out_division)
 );
 
 logic[31:0] out_sqrt;
@@ -62,7 +63,7 @@ logic valid_data_out_sqrt;
 
 fp_sqrt_pipeline sqrt (
     .clk(clk), .rst(rst), .valid_data_in(valid_data_in),
-    .in1(in1), .rounding_mode(rounding_mode),
+    .in(in1), .rounding_mode(rounding_mode),
     .out(out_sqrt), .overflow(overflow_sqrt), .underflow(underflow_sqrt), 
     .inexact(inexact_sqrt), .invalid_operation(invalid_operation_sqrt),
     .valid_data_out(valid_data_out_sqrt)
@@ -91,7 +92,7 @@ fp_fused_mult_add_pipeline fused_mult_add (
     .valid_data_out(valid_data_out_fused_mult_add)
 );
 
-logic[31:0] out_equal;
+logic out_equal;
 logic invalid_operation_equal;
 logic valid_data_out_equal;
 
@@ -102,7 +103,7 @@ fp_compare #(.OPERATION(OP_EQ)) equal (
     .valid_data_out(valid_data_out_equal)
 );
 
-logic[31:0] out_less_or_equal;
+logic out_less_or_equal;
 logic invalid_operation_less_or_equal;
 logic valid_data_out_less_or_equal;
 
@@ -148,12 +149,12 @@ always_comb begin
             valid_data_out = valid_data_out_fused_mult_add;
         end
         3'b110: begin
-            out = out_equal;
+            out = {31'b0, out_equal};
             invalid_operation = invalid_operation_equal;
             valid_data_out = valid_data_out_equal;
         end
         3'b111: begin
-            out = out_less_or_equal;
+            out = {31'b0, out_less_or_equal};
             invalid_operation = invalid_operation_less_or_equal;
             valid_data_out = valid_data_out_less_or_equal;
         end

@@ -1,0 +1,804 @@
+#-----------------------------------------------------------
+# Vivado v2025.1 (64-bit)
+# SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
+# IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
+# SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
+# Start of session at: Thu Nov 20 17:08:13 2025
+# Process ID         : 6500
+# Current directory  : C:/Users/klein/Documents/projects/Floating-Point-ALU/vivado/FPU.runs/synth_1
+# Command line       : vivado.exe -log floating_point_alu.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source floating_point_alu.tcl
+# Log file           : C:/Users/klein/Documents/projects/Floating-Point-ALU/vivado/FPU.runs/synth_1/floating_point_alu.vds
+# Journal file       : C:/Users/klein/Documents/projects/Floating-Point-ALU/vivado/FPU.runs/synth_1\vivado.jou
+# Running On         : dantop
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26100
+# Processor Detail   : AMD Ryzen 7 7800X3D 8-Core Processor           
+# CPU Frequency      : 4192 MHz
+# CPU Physical cores : 8
+# CPU Logical cores  : 16
+# Host memory        : 33412 MB
+# Swap memory        : 16642 MB
+# Total Virtual      : 50055 MB
+# Available Virtual  : 21452 MB
+#-----------------------------------------------------------
+source floating_point_alu.tcl -notrace
+Command: read_checkpoint -auto_incremental -incremental C:/Users/klein/Documents/projects/Floating-Point-ALU/vivado/FPU.srcs/utils_1/imports/synth_1/floating_point_alu.dcp
+INFO: [Vivado 12-5825] Read reference checkpoint from C:/Users/klein/Documents/projects/Floating-Point-ALU/vivado/FPU.srcs/utils_1/imports/synth_1/floating_point_alu.dcp for incremental synthesis
+INFO: [Vivado 12-7989] Please ensure there are no constraint changes
+Command: synth_design -top floating_point_alu -part xc7z020clg484-1
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7z020'
+INFO: [Device 21-403] Loading part xc7z020clg484-1
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 8272
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 1214.383 ; gain = 494.047
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'floating_point_alu' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/top_level.sv:12]
+INFO: [Synth 8-6157] synthesizing module 'fp_addsub_pipeline' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/add_sub.sv:5]
+INFO: [Synth 8-6157] synthesizing module 'KSA_nbits' [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Kogge_Stone Adders.sv:127]
+	Parameter WIDTH bound to: 32'sb00000000000000000000000000011011 
+INFO: [Synth 8-6155] done synthesizing module 'KSA_nbits' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Kogge_Stone Adders.sv:127]
+INFO: [Synth 8-6157] synthesizing module 'leading_zero_detection' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/leading_zero_detection.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'leading_zero_detection' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/leading_zero_detection.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'floating_point_rounder' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/rounder.sv:3]
+INFO: [Synth 8-6155] done synthesizing module 'floating_point_rounder' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/rounder.sv:3]
+INFO: [Synth 8-6155] done synthesizing module 'fp_addsub_pipeline' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/add_sub.sv:5]
+INFO: [Synth 8-6157] synthesizing module 'fp_multiply_pipeline' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/multiply.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'Dadda_Multiplier_24bit_pipelined' [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Dadda_Multipliers_Pipelined.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'half_adder' [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Simple_Adders_And_Multipliers.sv:3]
+INFO: [Synth 8-6155] done synthesizing module 'half_adder' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Simple_Adders_And_Multipliers.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'full_adder' [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Simple_Adders_And_Multipliers.sv:13]
+INFO: [Synth 8-6155] done synthesizing module 'full_adder' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Simple_Adders_And_Multipliers.sv:13]
+INFO: [Synth 8-6157] synthesizing module 'KSA_nbits__parameterized0' [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Kogge_Stone Adders.sv:127]
+	Parameter WIDTH bound to: 32'sb00000000000000000000000000101110 
+INFO: [Synth 8-6155] done synthesizing module 'KSA_nbits__parameterized0' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Kogge_Stone Adders.sv:127]
+INFO: [Synth 8-6155] done synthesizing module 'Dadda_Multiplier_24bit_pipelined' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Dadda_Multipliers_Pipelined.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'fp_multiply_pipeline' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/multiply.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'fp_division_pipeline' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/division.sv:4]
+INFO: [Synth 8-6157] synthesizing module 'mantissa_reciprocal' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/reciprocal.sv:24]
+INFO: [Synth 8-6157] synthesizing module 'mantissa_reciprocal_LUT' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/reciprocal.sv:3]
+INFO: [Synth 8-3876] $readmem data file 'reciprocal_lut256.mem' is read successfully [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/reciprocal.sv:11]
+INFO: [Synth 8-6155] done synthesizing module 'mantissa_reciprocal_LUT' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/reciprocal.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'multiplier_delayed' [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/simple_pipelined_multiplier.sv:2]
+	Parameter WIDTH bound to: 32'sb00000000000000000000000000011011 
+INFO: [Synth 8-6155] done synthesizing module 'multiplier_delayed' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/simple_pipelined_multiplier.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'KSA_nbits__parameterized1' [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Kogge_Stone Adders.sv:127]
+	Parameter WIDTH bound to: 32'sb00000000000000000000000000011100 
+INFO: [Synth 8-6155] done synthesizing module 'KSA_nbits__parameterized1' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/Kogge_Stone Adders.sv:127]
+INFO: [Synth 8-6155] done synthesizing module 'mantissa_reciprocal' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/reciprocal.sv:24]
+INFO: [Synth 8-6155] done synthesizing module 'fp_division_pipeline' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/division.sv:4]
+INFO: [Synth 8-6157] synthesizing module 'fp_sqrt_pipeline' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/sqrt.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'mantissa_inverse_sqrt' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/inverse_sqrt.sv:28]
+INFO: [Synth 8-6157] synthesizing module 'mantissa_inverse_sqrt_LUT' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/inverse_sqrt.sv:3]
+INFO: [Synth 8-3876] $readmem data file 'inverse_sqrt_lut256_normal.mem' is read successfully [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/inverse_sqrt.sv:12]
+INFO: [Synth 8-3876] $readmem data file 'inverse_sqrt_lut256_double.mem' is read successfully [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/inverse_sqrt.sv:13]
+INFO: [Synth 8-6155] done synthesizing module 'mantissa_inverse_sqrt_LUT' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/inverse_sqrt.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'multiplier_delayed__parameterized0' [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/simple_pipelined_multiplier.sv:2]
+	Parameter WIDTH bound to: 32'sb00000000000000000000000000011100 
+INFO: [Synth 8-6155] done synthesizing module 'multiplier_delayed__parameterized0' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/Advanced-Adders-and-Multipliers/src/simple_pipelined_multiplier.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'mantissa_inverse_sqrt' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/inverse_sqrt.sv:28]
+INFO: [Synth 8-6155] done synthesizing module 'fp_sqrt_pipeline' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/sqrt.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'fp_max' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/max_min.sv:94]
+INFO: [Synth 8-6155] done synthesizing module 'fp_max' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/max_min.sv:94]
+INFO: [Synth 8-6157] synthesizing module 'fp_fused_mult_add_pipeline' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/fused_mult_add.sv:4]
+INFO: [Synth 8-6155] done synthesizing module 'fp_fused_mult_add_pipeline' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/fused_mult_add.sv:4]
+INFO: [Synth 8-6157] synthesizing module 'fp_compare' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/compare.sv:3]
+	Parameter OPERATION bound to: 3'b000 
+INFO: [Synth 8-6155] done synthesizing module 'fp_compare' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/compare.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'fp_compare__parameterized0' [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/compare.sv:3]
+	Parameter OPERATION bound to: 3'b011 
+INFO: [Synth 8-6155] done synthesizing module 'fp_compare__parameterized0' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/compare.sv:3]
+INFO: [Synth 8-6155] done synthesizing module 'floating_point_alu' (0#1) [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/top_level.sv:12]
+WARNING: [Synth 8-3936] Found unconnected internal register 's4_aligned_smaller_mantissa_reg' and it is trimmed from '54' to '27' bits. [C:/Users/klein/Documents/projects/Floating-Point-ALU/src/fused_mult_add.sv:282]
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 1382.754 ; gain = 662.418
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 1382.754 ; gain = 662.418
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 1382.754 ; gain = 662.418
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.091 . Memory (MB): peak = 1382.754 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [C:/Users/klein/Documents/projects/Floating-Point-ALU/timing constraints.xdc]
+Finished Parsing XDC File [C:/Users/klein/Documents/projects/Floating-Point-ALU/timing constraints.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 1431.512 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.063 . Memory (MB): peak = 1431.512 ; gain = 0.000
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:13 ; elapsed = 00:00:14 . Memory (MB): peak = 1431.512 ; gain = 711.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7z020clg484-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:13 ; elapsed = 00:00:14 . Memory (MB): peak = 1431.512 ; gain = 711.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:13 ; elapsed = 00:00:14 . Memory (MB): peak = 1431.512 ; gain = 711.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:14 ; elapsed = 00:00:15 . Memory (MB): peak = 1431.512 ; gain = 711.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input   56 Bit       Adders := 7     
+	   2 Input   54 Bit       Adders := 5     
+	   2 Input   24 Bit       Adders := 5     
+	   3 Input   10 Bit       Adders := 6     
+	   2 Input   10 Bit       Adders := 4     
+	   4 Input    9 Bit       Adders := 1     
+	   2 Input    9 Bit       Adders := 1     
+	   3 Input    8 Bit       Adders := 1     
+	   2 Input    8 Bit       Adders := 2     
++---XORs : 
+	   2 Input     46 Bit         XORs := 4     
+	   2 Input     28 Bit         XORs := 8     
+	   2 Input     27 Bit         XORs := 8     
+	   2 Input      1 Bit         XORs := 56    
+	   3 Input      1 Bit         XORs := 966   
++---Registers : 
+	               56 Bit    Registers := 7     
+	               54 Bit    Registers := 5     
+	               48 Bit    Registers := 50    
+	               32 Bit    Registers := 6     
+	               28 Bit    Registers := 24    
+	               27 Bit    Registers := 18    
+	               24 Bit    Registers := 4     
+	               23 Bit    Registers := 67    
+	               10 Bit    Registers := 19    
+	                8 Bit    Registers := 74    
+	                3 Bit    Registers := 43    
+	                1 Bit    Registers := 844   
++---ROMs : 
+	                    ROMs := 3     
++---Muxes : 
+	   2 Input   32 Bit        Muxes := 40    
+	   3 Input   32 Bit        Muxes := 2     
+	   4 Input   32 Bit        Muxes := 5     
+	   2 Input   28 Bit        Muxes := 2     
+	   2 Input   27 Bit        Muxes := 3     
+	   2 Input   24 Bit        Muxes := 1     
+	   2 Input   23 Bit        Muxes := 23    
+	   2 Input   10 Bit        Muxes := 5     
+	   2 Input    9 Bit        Muxes := 1     
+	   2 Input    8 Bit        Muxes := 14    
+	   2 Input    2 Bit        Muxes := 1     
+	   2 Input    1 Bit        Muxes := 68    
+	   4 Input    1 Bit        Muxes := 5     
+	   3 Input    1 Bit        Muxes := 1     
+	   5 Input    1 Bit        Muxes := 1     
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 220 (col length:60)
+BRAMs: 280 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7080] Parallel synthesis criteria is not met
+DSP Report: Generating DSP s4_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s4_mult/s2_mult_out0 is absorbed into DSP s4_mult/s2_mult_out0.
+DSP Report: operator s4_mult/s2_mult_out0 is absorbed into DSP s4_mult/s2_mult_out0.
+DSP Report: Generating DSP s4_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s4_mult/s2_mult_out0 is absorbed into DSP s4_mult/s2_mult_out0.
+DSP Report: operator s4_mult/s2_mult_out0 is absorbed into DSP s4_mult/s2_mult_out0.
+DSP Report: Generating DSP s4_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s4_mult/s2_mult_out0 is absorbed into DSP s4_mult/s2_mult_out0.
+DSP Report: operator s4_mult/s2_mult_out0 is absorbed into DSP s4_mult/s2_mult_out0.
+DSP Report: Generating DSP s4_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s4_mult/s2_mult_out0 is absorbed into DSP s4_mult/s2_mult_out0.
+DSP Report: operator s4_mult/s2_mult_out0 is absorbed into DSP s4_mult/s2_mult_out0.
+DSP Report: Generating DSP s6_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: Generating DSP s6_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: Generating DSP s6_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: Generating DSP s6_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: Generating DSP s1_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: Generating DSP s1_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: Generating DSP s1_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: Generating DSP s1_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: Generating DSP s9_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s9_mult/s2_mult_out0 is absorbed into DSP s9_mult/s2_mult_out0.
+DSP Report: operator s9_mult/s2_mult_out0 is absorbed into DSP s9_mult/s2_mult_out0.
+DSP Report: Generating DSP s9_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s9_mult/s2_mult_out0 is absorbed into DSP s9_mult/s2_mult_out0.
+DSP Report: operator s9_mult/s2_mult_out0 is absorbed into DSP s9_mult/s2_mult_out0.
+DSP Report: Generating DSP s9_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s9_mult/s2_mult_out0 is absorbed into DSP s9_mult/s2_mult_out0.
+DSP Report: operator s9_mult/s2_mult_out0 is absorbed into DSP s9_mult/s2_mult_out0.
+DSP Report: Generating DSP s9_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s9_mult/s2_mult_out0 is absorbed into DSP s9_mult/s2_mult_out0.
+DSP Report: operator s9_mult/s2_mult_out0 is absorbed into DSP s9_mult/s2_mult_out0.
+DSP Report: Generating DSP s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: Generating DSP s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: Generating DSP s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: Generating DSP s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: Generating DSP s6_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: Generating DSP s6_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: Generating DSP s6_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: Generating DSP s6_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: operator s6_mult/s2_mult_out0 is absorbed into DSP s6_mult/s2_mult_out0.
+DSP Report: Generating DSP s8_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s8_mult/s2_mult_out0 is absorbed into DSP s8_mult/s2_mult_out0.
+DSP Report: operator s8_mult/s2_mult_out0 is absorbed into DSP s8_mult/s2_mult_out0.
+DSP Report: Generating DSP s8_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s8_mult/s2_mult_out0 is absorbed into DSP s8_mult/s2_mult_out0.
+DSP Report: operator s8_mult/s2_mult_out0 is absorbed into DSP s8_mult/s2_mult_out0.
+DSP Report: Generating DSP s8_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s8_mult/s2_mult_out0 is absorbed into DSP s8_mult/s2_mult_out0.
+DSP Report: operator s8_mult/s2_mult_out0 is absorbed into DSP s8_mult/s2_mult_out0.
+DSP Report: Generating DSP s8_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s8_mult/s2_mult_out0 is absorbed into DSP s8_mult/s2_mult_out0.
+DSP Report: operator s8_mult/s2_mult_out0 is absorbed into DSP s8_mult/s2_mult_out0.
+DSP Report: Generating DSP s10_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s10_mult/s2_mult_out0 is absorbed into DSP s10_mult/s2_mult_out0.
+DSP Report: operator s10_mult/s2_mult_out0 is absorbed into DSP s10_mult/s2_mult_out0.
+DSP Report: Generating DSP s10_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s10_mult/s2_mult_out0 is absorbed into DSP s10_mult/s2_mult_out0.
+DSP Report: operator s10_mult/s2_mult_out0 is absorbed into DSP s10_mult/s2_mult_out0.
+DSP Report: Generating DSP s10_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s10_mult/s2_mult_out0 is absorbed into DSP s10_mult/s2_mult_out0.
+DSP Report: operator s10_mult/s2_mult_out0 is absorbed into DSP s10_mult/s2_mult_out0.
+DSP Report: Generating DSP s10_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s10_mult/s2_mult_out0 is absorbed into DSP s10_mult/s2_mult_out0.
+DSP Report: operator s10_mult/s2_mult_out0 is absorbed into DSP s10_mult/s2_mult_out0.
+DSP Report: Generating DSP s1_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: Generating DSP s1_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: Generating DSP s1_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: Generating DSP s1_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: operator s1_mult/s2_mult_out0 is absorbed into DSP s1_mult/s2_mult_out0.
+DSP Report: Generating DSP s3_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s3_mult/s2_mult_out0 is absorbed into DSP s3_mult/s2_mult_out0.
+DSP Report: operator s3_mult/s2_mult_out0 is absorbed into DSP s3_mult/s2_mult_out0.
+DSP Report: Generating DSP s3_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s3_mult/s2_mult_out0 is absorbed into DSP s3_mult/s2_mult_out0.
+DSP Report: operator s3_mult/s2_mult_out0 is absorbed into DSP s3_mult/s2_mult_out0.
+DSP Report: Generating DSP s3_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s3_mult/s2_mult_out0 is absorbed into DSP s3_mult/s2_mult_out0.
+DSP Report: operator s3_mult/s2_mult_out0 is absorbed into DSP s3_mult/s2_mult_out0.
+DSP Report: Generating DSP s3_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s3_mult/s2_mult_out0 is absorbed into DSP s3_mult/s2_mult_out0.
+DSP Report: operator s3_mult/s2_mult_out0 is absorbed into DSP s3_mult/s2_mult_out0.
+DSP Report: Generating DSP s13_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s13_mult/s2_mult_out0 is absorbed into DSP s13_mult/s2_mult_out0.
+DSP Report: operator s13_mult/s2_mult_out0 is absorbed into DSP s13_mult/s2_mult_out0.
+DSP Report: Generating DSP s13_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s13_mult/s2_mult_out0 is absorbed into DSP s13_mult/s2_mult_out0.
+DSP Report: operator s13_mult/s2_mult_out0 is absorbed into DSP s13_mult/s2_mult_out0.
+DSP Report: Generating DSP s13_mult/s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s13_mult/s2_mult_out0 is absorbed into DSP s13_mult/s2_mult_out0.
+DSP Report: operator s13_mult/s2_mult_out0 is absorbed into DSP s13_mult/s2_mult_out0.
+DSP Report: Generating DSP s13_mult/s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s13_mult/s2_mult_out0 is absorbed into DSP s13_mult/s2_mult_out0.
+DSP Report: operator s13_mult/s2_mult_out0 is absorbed into DSP s13_mult/s2_mult_out0.
+DSP Report: Generating DSP s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: Generating DSP s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: Generating DSP s2_mult_out0, operation Mode is: A*B.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: Generating DSP s2_mult_out0, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+DSP Report: operator s2_mult_out0 is absorbed into DSP s2_mult_out0.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[47]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[46]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[45]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[44]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[43]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[42]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[41]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[40]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[39]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[38]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[37]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[36]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[35]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[34]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[33]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[32]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[31]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[30]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[29]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[28]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[27]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[26]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[25]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[24]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[23]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[22]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[21]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[20]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[19]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[18]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[17]) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[47]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[46]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[45]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[44]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[43]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[42]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[41]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[40]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[39]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[38]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[37]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[36]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[35]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[34]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[33]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[32]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[31]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[30]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[29]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[28]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[27]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[26]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[25]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[24]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[23]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[22]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[21]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[20]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[19]__0) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[47]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[46]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[45]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[44]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[43]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[42]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[41]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[40]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[39]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[38]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[37]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[36]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[35]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[34]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[33]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[32]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[31]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[30]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[29]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[28]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[27]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[26]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[25]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[24]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[23]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[22]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[21]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[20]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[19]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[18]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[17]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[15]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[14]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[13]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[12]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[11]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[10]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[9]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[8]__1) is unused and will be removed from module fp_division_pipeline.
+WARNING: [Synth 8-3332] Sequential element (s13_reciprocal/s4_mult/s2_mult_out_reg[7]__1) is unused and will be removed from module fp_division_pipeline.
+INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:27 ; elapsed = 00:01:29 . Memory (MB): peak = 1893.742 ; gain = 1173.406
+---------------------------------------------------------------------------------
+ Sort Area is  s10_mult/s2_mult_out0_16 : 0 0 : 2701 4374 : Used 1 time 0
+ Sort Area is  s10_mult/s2_mult_out0_16 : 0 1 : 1673 4374 : Used 1 time 0
+ Sort Area is  s13_mult/s2_mult_out0_1c : 0 0 : 2701 4374 : Used 1 time 0
+ Sort Area is  s13_mult/s2_mult_out0_1c : 0 1 : 1673 4374 : Used 1 time 0
+ Sort Area is  s2_mult_out0_1e : 0 0 : 2701 4374 : Used 1 time 0
+ Sort Area is  s2_mult_out0_1e : 0 1 : 1673 4374 : Used 1 time 0
+ Sort Area is  s3_mult/s2_mult_out0_1a : 0 0 : 2701 4374 : Used 1 time 0
+ Sort Area is  s3_mult/s2_mult_out0_1a : 0 1 : 1673 4374 : Used 1 time 0
+ Sort Area is  s6_mult/s2_mult_out0_e : 0 0 : 2701 4374 : Used 1 time 0
+ Sort Area is  s6_mult/s2_mult_out0_e : 0 1 : 1673 4374 : Used 1 time 0
+ Sort Area is  s8_mult/s2_mult_out0_12 : 0 0 : 2701 4374 : Used 1 time 0
+ Sort Area is  s8_mult/s2_mult_out0_12 : 0 1 : 1673 4374 : Used 1 time 0
+ Sort Area is  s1_mult/s2_mult_out0_18 : 0 0 : 2701 4259 : Used 1 time 0
+ Sort Area is  s1_mult/s2_mult_out0_18 : 0 1 : 1558 4259 : Used 1 time 0
+ Sort Area is  s1_mult/s2_mult_out0_8 : 0 0 : 2701 4259 : Used 1 time 0
+ Sort Area is  s1_mult/s2_mult_out0_8 : 0 1 : 1558 4259 : Used 1 time 0
+ Sort Area is  s2_mult_out0_c : 0 0 : 2701 4259 : Used 1 time 0
+ Sort Area is  s2_mult_out0_c : 0 1 : 1558 4259 : Used 1 time 0
+ Sort Area is  s4_mult/s2_mult_out0_0 : 0 0 : 2701 4259 : Used 1 time 0
+ Sort Area is  s4_mult/s2_mult_out0_0 : 0 1 : 1558 4259 : Used 1 time 0
+ Sort Area is  s6_mult/s2_mult_out0_6 : 0 0 : 2701 4259 : Used 1 time 0
+ Sort Area is  s6_mult/s2_mult_out0_6 : 0 1 : 1558 4259 : Used 1 time 0
+ Sort Area is  s9_mult/s2_mult_out0_a : 0 0 : 2701 4259 : Used 1 time 0
+ Sort Area is  s9_mult/s2_mult_out0_a : 0 1 : 1558 4259 : Used 1 time 0
+ Sort Area is  s10_mult/s2_mult_out0_17 : 0 0 : 1670 2923 : Used 1 time 0
+ Sort Area is  s10_mult/s2_mult_out0_17 : 0 1 : 1253 2923 : Used 1 time 0
+ Sort Area is  s2_mult_out0_1f : 0 0 : 1670 2923 : Used 1 time 0
+ Sort Area is  s2_mult_out0_1f : 0 1 : 1253 2923 : Used 1 time 0
+ Sort Area is  s3_mult/s2_mult_out0_1b : 0 0 : 1670 2923 : Used 1 time 0
+ Sort Area is  s3_mult/s2_mult_out0_1b : 0 1 : 1253 2923 : Used 1 time 0
+ Sort Area is  s8_mult/s2_mult_out0_13 : 0 0 : 1670 2923 : Used 1 time 0
+ Sort Area is  s8_mult/s2_mult_out0_13 : 0 1 : 1253 2923 : Used 1 time 0
+ Sort Area is  s13_mult/s2_mult_out0_1d : 0 0 : 1556 2735 : Used 1 time 0
+ Sort Area is  s13_mult/s2_mult_out0_1d : 0 1 : 1179 2735 : Used 1 time 0
+ Sort Area is  s6_mult/s2_mult_out0_10 : 0 0 : 1556 2735 : Used 1 time 0
+ Sort Area is  s6_mult/s2_mult_out0_10 : 0 1 : 1179 2735 : Used 1 time 0
+ Sort Area is  s1_mult/s2_mult_out0_19 : 0 0 : 1556 2669 : Used 1 time 0
+ Sort Area is  s1_mult/s2_mult_out0_19 : 0 1 : 1113 2669 : Used 1 time 0
+ Sort Area is  s1_mult/s2_mult_out0_9 : 0 0 : 1556 2669 : Used 1 time 0
+ Sort Area is  s1_mult/s2_mult_out0_9 : 0 1 : 1113 2669 : Used 1 time 0
+ Sort Area is  s2_mult_out0_d : 0 0 : 1556 2669 : Used 1 time 0
+ Sort Area is  s2_mult_out0_d : 0 1 : 1113 2669 : Used 1 time 0
+ Sort Area is  s4_mult/s2_mult_out0_3 : 0 0 : 1556 2669 : Used 1 time 0
+ Sort Area is  s4_mult/s2_mult_out0_3 : 0 1 : 1113 2669 : Used 1 time 0
+ Sort Area is  s6_mult/s2_mult_out0_7 : 0 0 : 1556 2669 : Used 1 time 0
+ Sort Area is  s6_mult/s2_mult_out0_7 : 0 1 : 1113 2669 : Used 1 time 0
+ Sort Area is  s9_mult/s2_mult_out0_b : 0 0 : 1556 2669 : Used 1 time 0
+ Sort Area is  s9_mult/s2_mult_out0_b : 0 1 : 1113 2669 : Used 1 time 0
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+ROM: Preliminary Mapping Report
++----------------------+----------------------------------------+---------------+----------------+
+|Module Name           | RTL Object                             | Depth x Width | Implemented As | 
++----------------------+----------------------------------------+---------------+----------------+
+|mantissa_reciprocal   | s0_reciprocal_lut/out_reg              | 256x24        | Block RAM      | 
+|mantissa_inverse_sqrt | s0_inverse_sqrt_lut/lut_normal_out_reg | 256x24        | Block RAM      | 
+|mantissa_inverse_sqrt | s0_inverse_sqrt_lut/lut_double_out_reg | 256x24        | Block RAM      | 
++----------------------+----------------------------------------+---------------+----------------+
+
+
+DSP: Preliminary Mapping Report (see note below. The ' indicates corresponding REG is set)
++-------------------+----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|Module Name        | DSP Mapping    | A Size | B Size | C Size | D Size | P Size | AREG | BREG | CREG | DREG | ADREG | MREG | PREG | 
++-------------------+----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|multiplier_delayed | A*B            | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 12     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 12     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 12     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 12     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 12     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 12     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17)+A*B | 18     | 12     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
++-------------------+----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+
+Note: The table above is a preliminary report that shows the DSPs inferred at the current stage of the synthesis flow. Some DSP may be reimplemented as non DSP primitives later in the synthesis flow. Multiple instantiated DSPs are reported only once.
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:33 ; elapsed = 00:01:35 . Memory (MB): peak = 1893.742 ; gain = 1173.406
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:01:37 ; elapsed = 00:01:39 . Memory (MB): peak = 1893.742 ; gain = 1173.406
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+INFO: [Synth 8-7052] The timing for the instance division/s13_reciprocal/s0_reciprocal_lut/out_reg (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance division/s13_reciprocal/s0_reciprocal_lut/out_reg (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:01:40 ; elapsed = 00:01:42 . Memory (MB): peak = 1922.316 ; gain = 1201.980
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:01:43 ; elapsed = 00:01:45 . Memory (MB): peak = 1940.133 ; gain = 1219.797
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:43 ; elapsed = 00:01:45 . Memory (MB): peak = 1940.133 ; gain = 1219.797
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:43 ; elapsed = 00:01:46 . Memory (MB): peak = 1940.133 ; gain = 1219.797
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:43 ; elapsed = 00:01:46 . Memory (MB): peak = 1940.133 ; gain = 1219.797
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:43 ; elapsed = 00:01:46 . Memory (MB): peak = 1940.133 ; gain = 1219.797
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:43 ; elapsed = 00:01:46 . Memory (MB): peak = 1940.133 ; gain = 1219.797
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Static Shift Register Report:
++-------------------+--------------------------------------------------------------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+|Module Name        | RTL Name                                                                       | Length | Width | Reset Signal | Pull out first Reg | Pull out last Reg | SRL16E | SRLC32E | 
++-------------------+--------------------------------------------------------------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+|floating_point_alu | addsub/invalid_operation_reg                                                   | 4      | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | multiply/invalid_operation_reg                                                 | 4      | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | division/s13_reciprocal/s6_a_reg[26]                                           | 5      | 24    | YES          | NO                 | YES               | 24     | 0       | 
+|floating_point_alu | division/s15_exponent_reg[9]                                                   | 13     | 10    | YES          | NO                 | YES               | 10     | 0       | 
+|floating_point_alu | division/s15_special_case_reg                                                  | 14     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | division/s15_sign_bit_reg                                                      | 11     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | division/s15_special_result_reg[mantissa][22]                                  | 14     | 25    | YES          | NO                 | YES               | 25     | 0       | 
+|floating_point_alu | division/s15_input_is_flushed_reg                                              | 14     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | division/invalid_operation_reg                                                 | 15     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | division/division_by_zero_reg                                                  | 15     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | division/s3_s13_in1_mantissa_reg[10][22]                                       | 10     | 6     | YES          | NO                 | YES               | 6      | 0       | 
+|floating_point_alu | division/s3_s13_in1_mantissa_reg[10][16]                                       | 11     | 17    | YES          | NO                 | YES               | 17     | 0       | 
+|floating_point_alu | sqrt/s17_inverse_square_root/genblk1[14].special_results_reg[15][mantissa][22] | 16     | 23    | YES          | NO                 | YES               | 23     | 0       | 
+|floating_point_alu | sqrt/s17_inverse_square_root/s10_a_reg[26]                                     | 7      | 24    | YES          | NO                 | YES               | 24     | 0       | 
+|floating_point_alu | sqrt/s17_inverse_square_root/s6_x_n_reg[26]                                    | 5      | 24    | YES          | NO                 | YES               | 24     | 0       | 
+|floating_point_alu | sqrt/s17_inverse_square_root/s13_x_n_1_reg[27]                                 | 5      | 27    | YES          | NO                 | YES               | 27     | 0       | 
+|floating_point_alu | sqrt/s19_rounding_mode_reg[2]                                                  | 4      | 3     | YES          | NO                 | YES               | 3      | 0       | 
+|floating_point_alu | sqrt/s4_s19_new_exponents_reg[15][6]                                           | 16     | 7     | YES          | NO                 | YES               | 7      | 0       | 
+|floating_point_alu | sqrt/s19_special_case_reg                                                      | 18     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | sqrt/s19_special_result_reg[exponent][7]                                       | 18     | 8     | YES          | NO                 | YES               | 8      | 0       | 
+|floating_point_alu | sqrt/s19_special_result_reg[sign]                                              | 17     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | sqrt/s19_input_is_flushed_reg                                                  | 18     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | sqrt/invalid_operation_reg                                                     | 19     | 1     | YES          | NO                 | YES               | 0      | 1       | 
+|floating_point_alu | sqrt/valid_data_out_reg                                                        | 4      | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | sqrt/s4_s17_exponent_is_even_reg[13]                                           | 5      | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | sqrt/s4_s17_exponent_is_even_reg[8]                                            | 7      | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | fused_mult_add/s6_special_case_reg                                             | 5      | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | fused_mult_add/s6_special_result_reg[mantissa][22]                             | 5      | 32    | YES          | NO                 | YES               | 32     | 0       | 
+|floating_point_alu | fused_mult_add/s6_input_is_flushed_reg                                         | 5      | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | fused_mult_add/invalid_operation_reg                                           | 6      | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|floating_point_alu | sqrt/s17_inverse_square_root/genblk1[13].valid_data_ins_reg[14]                | 9      | 4     | YES          | NO                 | YES               | 4      | 0       | 
++-------------------+--------------------------------------------------------------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+DSP Final Report (the ' indicates corresponding REG is set)
++-------------------+-----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|Module Name        | DSP Mapping     | A Size | B Size | C Size | D Size | P Size | AREG | BREG | CREG | DREG | ADREG | MREG | PREG | 
++-------------------+-----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|multiplier_delayed | A*B             | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 10     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 10     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 0      | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 10     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 10     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 0      | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 10     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 0      | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 0      | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 11     | 0      | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 0      | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 10     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 17     | 10     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 17     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 9      | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 11     | 0      | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 0      | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 17     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 11     | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
+|multiplier_delayed | A*B             | 17     | 17     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|multiplier_delayed | (PCIN>>17+A*B)' | 0      | 11     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 1    | 
++-------------------+-----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+
+
+Report BlackBoxes: 
++-+--------------+----------+
+| |BlackBox name |Instances |
++-+--------------+----------+
++-+--------------+----------+
+
+Report Cell Usage: 
++------+---------+------+
+|      |Cell     |Count |
++------+---------+------+
+|1     |BUFG     |     1|
+|2     |CARRY4   |   246|
+|3     |DSP48E1  |    48|
+|5     |LUT1     |   165|
+|6     |LUT2     |  1038|
+|7     |LUT3     |   964|
+|8     |LUT4     |   929|
+|9     |LUT5     |   936|
+|10    |LUT6     |  1651|
+|11    |MUXF7    |    76|
+|12    |MUXF8    |    36|
+|13    |RAMB18E1 |     1|
+|14    |SRL16E   |   250|
+|15    |SRLC32E  |     1|
+|16    |FDCE     |  2645|
+|17    |FDRE     |   297|
+|18    |IBUF     |   105|
+|19    |OBUF     |    38|
++------+---------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:43 ; elapsed = 00:01:46 . Memory (MB): peak = 1940.133 ; gain = 1219.797
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 1387 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:01:36 ; elapsed = 00:01:44 . Memory (MB): peak = 1940.133 ; gain = 1171.039
+Synthesis Optimization Complete : Time (s): cpu = 00:01:44 ; elapsed = 00:01:46 . Memory (MB): peak = 1940.133 ; gain = 1219.797
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.061 . Memory (MB): peak = 1950.340 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 407 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 1954.523 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete | Checksum: c4d4de12
+INFO: [Common 17-83] Releasing license: Synthesis
+72 Infos, 102 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:01:48 ; elapsed = 00:01:57 . Memory (MB): peak = 1954.523 ; gain = 1466.145
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.011 . Memory (MB): peak = 1954.523 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/klein/Documents/projects/Floating-Point-ALU/vivado/FPU.runs/synth_1/floating_point_alu.dcp' has been generated.
+INFO: [Vivado 12-24828] Executing command : report_utilization -file floating_point_alu_utilization_synth.rpt -pb floating_point_alu_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Thu Nov 20 17:10:20 2025...

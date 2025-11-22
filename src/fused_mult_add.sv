@@ -345,7 +345,7 @@ KSA_nbits #(.WIDTH(27)) s5_adder (.in1(s5_larger_mantissa), .in2(s5_aligned_smal
 
 assign s5_subtractor_input2 = ~s5_aligned_smaller_mantissa + 1'b1;
 
-KSA_nbits #(.WIDTH(27)) s3_subtractor (.in1(s5_larger_mantissa), .in2(s5_subtractor_input2), .out(s5_subtraction_result));
+KSA_nbits #(.WIDTH(27)) s3_subtractor (.in1(s5_larger_mantissa), .in2(s5_subtractor_input2), .out(s5_subtraction_result), .cout());
 
 assign s5_exact_zero = s5_op_is_subtraction ? (s5_larger_mantissa == s5_aligned_smaller_mantissa) : 1'b0;
 

@@ -142,7 +142,7 @@ assign two = 28'h8000000;
 
 //fixed point Q2.26
 logic [27:0] s3_z;
-KSA_nbits #(.WIDTH(28)) s3_subtractor(.in1(two), .in2(s3_y_truncated_and_negated), .out(s3_z));
+KSA_nbits #(.WIDTH(28)) s3_subtractor(.in1(two), .in2(s3_y_truncated_and_negated), .out(s3_z), .cout());
 
 //fixed point Q1.26
 logic [26:0] s4_z;
@@ -181,7 +181,7 @@ assign s8_y2_truncated_and_negated = ~(s8_y2_pre_truncate[53:26]) + 1'b1;
 
 //fixed point Q2.26
 logic[27:0] s8_z2;
-KSA_nbits #(.WIDTH(28)) s8_subtractor(.in1(two), .in2(s8_y2_truncated_and_negated), .out(s8_z2));
+KSA_nbits #(.WIDTH(28)) s8_subtractor(.in1(two), .in2(s8_y2_truncated_and_negated), .out(s8_z2), .cout());
 
 //fixed point Q1.26
 logic[26:0] s9_z2;

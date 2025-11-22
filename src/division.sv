@@ -135,21 +135,21 @@ assign s2_sign_bit = s2_in1.sign ^ s2_in2.sign;
 
 logic s3_s13_division_by_zero[11];
 logic signed[9:0] s3_s13_new_exponents[11];
-fp_32b_t s3_s13_in1[11];
+logic[22:0] s3_s13_in1_mantissa[11];
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         for(int i = 0; i < 11; i++) begin
             s3_s13_division_by_zero[i] <= 0;
             s3_s13_new_exponents[i] <= 0;
-            s3_s13_in1[i] <= 0;
+            s3_s13_in1_mantissa[i] <= 0;
         end
     end else begin
         s3_s13_new_exponents[0] <= s2_exponent_sub;
-        s3_s13_in1[0] <= s2_in1;
+        s3_s13_in1_mantissa[0] <= s2_in1.mantissa;
         s3_s13_division_by_zero[0] <= s2_division_by_zero;
         for(int i = 0; i < 10; i++) begin
             s3_s13_new_exponents[i+1] <= s3_s13_new_exponents[i];
-            s3_s13_in1[i+1] <= s3_s13_in1[i];
+            s3_s13_in1_mantissa[i+1] <= s3_s13_in1_mantissa[i];
             s3_s13_division_by_zero[i+1] <= s3_s13_division_by_zero[i];
         end
     end
@@ -241,7 +241,7 @@ end
 
 //Q1.26
 logic[26:0] s13_in1;
-assign s13_in1 = {1'b1, s3_s13_in1[10].mantissa, 3'b000};
+assign s13_in1 = {1'b1, s3_s13_in1_mantissa[10], 3'b000};
 //Q2.52
 logic[53:0] s15_mult_out;
 multiplier_delayed #(.WIDTH(27)) s13_s15_mult(.clk(clk), .rst(rst), .in1(s13_in1), .in2(s13_reciprocal_out_truncated), .out(s15_mult_out));

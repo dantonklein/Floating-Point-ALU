@@ -167,7 +167,7 @@ assign three = 28'hC000000;
 
 //fixed point Q2.26
 logic [27:0] s5_z, s6_z;
-KSA_nbits #(.WIDTH(28)) s3_subtractor(.in1(three), .in2(s5_y_truncated_and_negated), .out(s5_z));
+KSA_nbits #(.WIDTH(28)) s3_subtractor(.in1(three), .in2(s5_y_truncated_and_negated), .out(s5_z), .cout());
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -220,7 +220,7 @@ logic[27:0] s12_y2_truncated_and_negated;
 assign s12_y2_truncated_and_negated = ~(s12_y2[53:26]) + 1'b1;
 
 logic[27:0] s12_z2;
-KSA_nbits #(.WIDTH(28)) s8_subtractor(.in1(three), .in2(s12_y2_truncated_and_negated), .out(s12_z2));
+KSA_nbits #(.WIDTH(28)) s8_subtractor(.in1(three), .in2(s12_y2_truncated_and_negated), .out(s12_z2), .cout());
 
 logic[27:0] s13_z2;
 logic[27:0] s9_x_n_1, s10_x_n_1, s11_x_n_1, s12_x_n_1, s13_x_n_1;
