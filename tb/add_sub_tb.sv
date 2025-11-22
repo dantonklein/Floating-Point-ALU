@@ -77,7 +77,8 @@ module add_sub_tb #(
     logic [31:0] out;
     logic overflow, underflow, inexact, invalid_operation;
     logic valid_data_out;
-    logic normalized_mantissa_lsb, normalized_guard, normalized_round, normalized_sticky, round_up;
+    logic guard, round, sticky;
+    logic[22:0] normalized_mantissa;
 
     fp_addsub_pipeline DUT (.*);
 
@@ -114,7 +115,7 @@ module add_sub_tb #(
             $display("[%0t] Test %0d: in1=0x%08h in1float=%f in2=0x%08h in2float=%f rmode=%0d", $time, i, in1, $bitstoshortreal(in1),in2, $bitstoshortreal(in2),rounding_mode);
             valid_data_in <= 0;
             @(posedge valid_data_out);
-            $display("  Result: 0x%08h Float: %f [ovf=%b unf=%b inx=%b inv=%b]", out, $bitstoshortreal(out), overflow, underflow, inexact, invalid_operation);
+            $display("  Result: 0x%08h Float: %f [ovf=%b unf=%b inx=%b inv=%b] [guard=%b round=%b sticky=%b normalized_mantissa=%b]", out, $bitstoshortreal(out), overflow, underflow, inexact, invalid_operation, guard, round, sticky, normalized_mantissa);
             $display("Expected: 0x%08h Float: %f", $shortrealtobits(expected_out), expected_out);
             //$display("Normalized_Mantissa_LSB: %b Normalized_Guard: %b Normalized_Round: %b Normalized_Sticky: %b Round_Up: %b\n", normalized_mantissa_lsb, normalized_guard, normalized_round, normalized_sticky, round_up);
         end
