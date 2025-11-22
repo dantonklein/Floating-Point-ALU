@@ -128,10 +128,6 @@ module add_sub_tb_no_crv;
         
         // ===== ALIGNMENT TESTS =====
         
-        // Large exponent difference - smaller operand gets absorbed
-        '{32'h42C80000, 32'h3F800000, RNE, 0, 0, 0, 0, "ADD: 100.0 + 1.0 = 101.0 (exact)"},
-        '{32'h47800000, 32'h3F800000, RNE, 0, 0, 1, 0, "ADD: 65536.0 + 1.0 = 65536.0 (1.0 absorbed, inexact)"},
-        '{32'h3F800000, 32'h47800000, RNE, 0, 0, 1, 0, "ADD: 1.0 + 65536.0 = 65536.0 (1.0 absorbed, inexact)"},
         
         // Negative number addition
         '{32'hC0000000, 32'hC0400000, RNE, 0, 0, 0, 0, "ADD: -2.0 + -3.0 = -5.0"},

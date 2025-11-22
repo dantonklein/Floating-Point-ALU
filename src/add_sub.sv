@@ -185,7 +185,7 @@ always_comb begin
     s2_aligned_smaller_mantissa = {1'b1, s2_smaller_mantissa,24'd0} >> s2_shift_amount;
 
     //if(s2_shift_amount >= 48) begin
-    if(s2_shift_amount >= 23) begin
+    if(s2_shift_amount >= 26) begin
         s2_alignment_sticky_bit = 1;
     end else begin
         //s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[23:0];

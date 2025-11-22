@@ -13,10 +13,10 @@ class fp_item;
 
     constraint special_case_dist {
         special_case dist {
-            2'd0 := 95, 
+            2'd0 := 80, 
             2'd1 := 2,
             2'd2 := 2,
-            2'd3 := 1
+            2'd3 := 16
         };
     }
 
@@ -33,8 +33,9 @@ class fp_item;
     //generate special value function
     function bit [31:0] get_random_special();
         bit[31:0] result;
-        bit[3:0] special_type = $urandom_range(0,11);
-
+        bit[4:0] special_type = $urandom_range(0,31);
+        bit sign = $urandom_range(0,1);
+        bit[22:0] mantissa = ($urandom() & 22'h7FFFFF);
         case(special_type)
             4'd0: result = 32'h00000000; //positive zero
             4'd1: result = 32'h80000000; //negative zero
@@ -54,6 +55,7 @@ class fp_item;
             4'd9: result = 32'h80800000 | ($urandom() & 32'h007FFFFF); // small negative number
             4'd10: result = 32'h7F000000 | ($urandom() & 32'h007FFFFF); // big positive number
             4'd11: result = 32'hFF000000 | ($urandom() & 32'h007FFFFF); // big negative number
+            default: result = {sign, 8'd127, mantissa}; //test numbers with same base
         endcase
 
         return result;
