@@ -65,18 +65,78 @@ While division would be the next logical operation to list, I elected to mention
 
 Division utilizes the module that calculates the reciprocal mantissa for calculating $\frac{1}{in2}$ followed by multiplication with in1. It takes 15 cycles for completion.
 
+<ol>
+  <li>Input Handling</li>
+  <li>Look-Up Table Read and Exponent Handling 1</li>
+  <li>Newton's Iteration 1 and Exponent Handling 2</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Multiplication 1</li>
+  <li>Multiplication 2</li>
+  <li>Rounding</li>
+</ol> 
+
 ## Inverse Square Root $\frac{1}{\sqrt{in}}$
 
 Similar to reciprocal, inverse square root is calculated utilizing a look up table and two Newton's Method iterations. It is also later used in the Square Root module. The reason why inverse square root is the calculation done with Newton's Method rather than Square Root is that it features no division in its formula, which is $x_{n+1} = \frac{1}{2}x_{n}(3-(a{x_n}^2))$. It takes 17 cycles for completion.
+
+<ol>
+  <li>Input Handling</li>
+  <li>Look-Up Table Read and Exponent Handling 1</li>
+  <li>Newton's Iteration 1 and Exponent Handling 2</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Rounding</li>
+</ol> 
 
 ## Square Root $\sqrt{in}$
 
 Square root utilizies the inverse square root module for calculating the reciprocal followed by a multiplication with the input since $\frac{in}{\sqrt{in}} = \sqrt{in}$. It takes 19 cycles for completion.
 
+<ol>
+  <li>Input Handling</li>
+  <li>Look-Up Table Read and Exponent Handling 1</li>
+  <li>Newton's Iteration 1 and Exponent Handling 2</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 1</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Newton's Iteration 2</li>
+  <li>Multiplication 1</li>
+  <li>Multiplication 2</li>
+  <li>Rounding</li>
+</ol> 
+
 ## Max/Min
 
 Max/Min calculate the maximum/minimum of two numbers and returns the corresponding number. The user also has an option to specify if you want to compare magnitudes or do regular signed comparison with a paramater. Takes 1 cycle to compute.
 
-##Comparison
+## Comparison
 
 Comparison can calculate equal to, not equal to, less than, greater than, less than or equal to, or greater than or equal to. The operation is decided by a parameter Takes 1 cycle to compute.
