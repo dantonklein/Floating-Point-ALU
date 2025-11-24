@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
-| Date         : Mon Nov 24 01:36:59 2025
+| Date         : Mon Nov 24 02:48:17 2025
 | Host         : dantop running 64-bit major release  (build 9200)
 | Command      : report_control_sets -verbose -file floating_point_alu_control_sets_placed.rpt
 | Design       : floating_point_alu
@@ -27,7 +27,7 @@ Table of Contents
 |    Minimum number of control sets                        |     5 |
 |    Addition due to synthesis replication                 |     0 |
 |    Addition due to physical synthesis replication        |     0 |
-| Unused register locations in slices containing registers |     4 |
+| Unused register locations in slices containing registers |     7 |
 +----------------------------------------------------------+-------+
 * Control sets can be merged at opt_design using control_set_merge or merge_equivalent_drivers
 ** Run report_qor_suggestions for automated merging and remapping suggestions
@@ -58,11 +58,11 @@ Table of Contents
 +--------------+-----------------------+------------------------+-----------------+--------------+
 | Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
 +--------------+-----------------------+------------------------+-----------------+--------------+
-| No           | No                    | No                     |             285 |           73 |
-| No           | No                    | Yes                    |            2649 |          876 |
-| No           | Yes                   | No                     |              46 |           42 |
+| No           | No                    | No                     |             285 |           77 |
+| No           | No                    | Yes                    |            2686 |          921 |
+| No           | Yes                   | No                     |              46 |           43 |
 | Yes          | No                    | No                     |               0 |            0 |
-| Yes          | No                    | Yes                    |              96 |           35 |
+| Yes          | No                    | Yes                    |              96 |           33 |
 | Yes          | Yes                   | No                     |               0 |            0 |
 +--------------+-----------------------+------------------------+-----------------+--------------+
 
@@ -73,11 +73,11 @@ Table of Contents
 +----------------+------------------------------------------------------+------------------+------------------+----------------+--------------+
 |  Clock Signal  |                     Enable Signal                    | Set/Reset Signal | Slice Load Count | Bel Load Count | Bels / Slice |
 +----------------+------------------------------------------------------+------------------+------------------+----------------+--------------+
-|  clk_IBUF_BUFG | multiply/s2_s4_multiplier/E[0]                       | rst_IBUF         |               14 |             32 |         2.29 |
-|  clk_IBUF_BUFG | sqrt/s17_inverse_square_root/E[0]                    | rst_IBUF         |               10 |             32 |         3.20 |
-|  clk_IBUF_BUFG | sqrt/s17_inverse_square_root/s15_special_case_reg[0] | rst_IBUF         |               11 |             32 |         2.91 |
-|  clk_IBUF_BUFG |                                                      |                  |               73 |            570 |         7.81 |
-|  clk_IBUF_BUFG |                                                      | rst_IBUF         |              918 |           2695 |         2.94 |
+|  clk_IBUF_BUFG | multiply/s2_s4_multiplier/E[0]                       | rst_IBUF         |               11 |             32 |         2.91 |
+|  clk_IBUF_BUFG | sqrt/s17_inverse_square_root/E[0]                    | rst_IBUF         |               12 |             32 |         2.67 |
+|  clk_IBUF_BUFG | sqrt/s17_inverse_square_root/s15_special_case_reg[0] | rst_IBUF         |               10 |             32 |         3.20 |
+|  clk_IBUF_BUFG |                                                      |                  |               77 |            570 |         7.40 |
+|  clk_IBUF_BUFG |                                                      | rst_IBUF         |              964 |           2732 |         2.83 |
 +----------------+------------------------------------------------------+------------------+------------------+----------------+--------------+
 
 

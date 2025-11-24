@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="impl_1" LaunchPart="xc7z020clg484-1" LaunchTime="1763966066">
+<GenRun Id="impl_1" LaunchPart="xc7z020clg484-1" LaunchTime="1763970336">
   <File Type="PA-TCL" Name="floating_point_alu.tcl"/>
   <File Type="REPORTS-TCL" Name="floating_point_alu_reports.tcl"/>
   <File Type="INIT-TIMING" Name="floating_point_alu_timing_summary_init.rpt"/>
@@ -284,7 +284,9 @@
     </Config>
   </FileSet>
   <Strategy Version="1" Minor="2">
-    <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+    <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
+      <Desc>Default settings for Implementation.</Desc>
+    </StratHandle>
     <Step Id="init_design"/>
     <Step Id="opt_design"/>
     <Step Id="power_opt_design"/>

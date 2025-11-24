@@ -3,11 +3,11 @@ SystemVerilog Implementation of an IEEE 754 floating point unit.
 
 The floating point unit has modules for addition/subtraction, multiplication, fused multiply-add, division, square root, reciprocal, inverse square root, max/min, and comparison. 
 
-It utilizes single precision (32-bit) floating point arithmetic and all modules are pipelined to allow for usage in data processing pipelines. The modules are optimized to achieve xxx MHz for an Artix 7 FPGA on a Zybo Z7 7020. Details on the specifics of the modules' features and pipeline stages are to follow. 
+It utilizes single precision (32-bit) floating point arithmetic and all modules are pipelined to allow for usage in data processing pipelines. The modules are optimized to achieve 110 MHz for an Artix-7 FPGA. Details on the specifics of the modules' features and pipeline stages are to follow. 
 
 ## Addition/Subtraction $in_1 + in_2$
 
-Addition and subtraction share a pipeline that decides on the operation based on the signs of the inputs. [Kogge-Stone Adders](https://github.com/dantonklein/Advanced-Adders-and-Multipliers) were utilized for addition/subtraction to optimize the design for speed. It takes 5 cycles for completion, with those stages being:
+Addition and subtraction share a pipeline that decides on the operation based on the signs of the inputs. [Kogge-Stone Adders](https://github.com/dantonklein/Advanced-Adders-and-Multipliers) were utilized for addition/subtraction to optimize the design for speed. It takes 6 cycles for completion, with those stages being:
 <ol>
   <li>Input Handling</li>
   <li>Alignment 1</li>
@@ -30,7 +30,7 @@ Multiplication uses a [24-bit Dadda Multiplier](https://github.com/dantonklein/A
 
 ## Fused Multiply-Add $(in_1 * in_2) + in_3$
 
-Fused multiply-add combines functionality of both addition/subtraction and multiplication into a pipeline that only requires 1 input handling stage and 1 rounding stage. It takes 7 cycles for completion, with those stages being:
+Fused multiply-add combines functionality of both addition/subtraction and multiplication into a pipeline that only requires 1 input handling stage and 1 rounding stage. It takes 8 cycles for completion, with those stages being:
 
 <ol>
   <li>Input Handling</li>
@@ -137,8 +137,8 @@ Square root utilizies the inverse square root module for calculating the recipro
 
 ## Max/Min
 
-Max/Min calculate the maximum/minimum of two numbers and returns the corresponding number. The user also has an option to specify if you want to compare magnitudes or do regular signed comparison with a paramater. Takes 1 cycle to compute.
+Max/Min calculate the maximum/minimum of two numbers and returns the corresponding number. The user also has an option to specify if you want to compare magnitudes or do regular signed comparison with a paramater. These units take 1 cycle to compute.
 
 ## Comparison
 
-Comparison can calculate equal to, not equal to, less than, greater than, less than or equal to, or greater than or equal to. The operation is decided by a parameter Takes 1 cycle to compute.
+Comparison can calculate equal to, not equal to, less than, greater than, less than or equal to, or greater than or equal to. The operation is decided by a parameter that the user can specify. This unit takes 1 cycle to compute.
