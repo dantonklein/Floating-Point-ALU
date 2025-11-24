@@ -8,8 +8,8 @@ module fp_addsub_pipeline (
     input logic[2:0] rounding_mode,
     output logic[31:0] out,
     output logic overflow, underflow, inexact, invalid_operation,
-    output logic guard, round, sticky, 
-    output logic[22:0] normalized_mantissa,
+    //output logic guard, round, sticky, 
+    //output logic[22:0] normalized_mantissa,
     output logic valid_data_out
 );
 
@@ -181,14 +181,11 @@ always_comb begin
         s2_larger = s2_in2;
         s2_smaller_mantissa = s2_in1.mantissa;
     end
-    //align smaller number's exponent
     s2_aligned_smaller_mantissa = {1'b1, s2_smaller_mantissa,24'd0} >> s2_shift_amount;
 
-    //if(s2_shift_amount >= 48) begin
     if(s2_shift_amount >= 26) begin
         s2_alignment_sticky_bit = 1;
     end else begin
-        //s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[23:0];
         s2_alignment_sticky_bit = | s2_aligned_smaller_mantissa[21:0];
     end
     
@@ -202,8 +199,6 @@ logic s3_special_case;
 logic s3_valid_data_in;
 logic[2:0] s3_rounding_mode;
 
-//logic[23:0] s3_aligned_smaller_mantissa;
-//logic[26:0] s3_aligned_smaller_mantissa;
 logic[25:0] s3_aligned_smaller_mantissa;
 logic s3_alignment_sticky_bit;
 fp_32b_t s3_larger_number;
@@ -228,9 +223,7 @@ always_ff @(posedge clk or posedge rst) begin
         s3_input_is_flushed <= s2_input_is_flushed;
         s3_special_case <= s2_special_case;
         s3_valid_data_in <= s2_valid_data_in;
-        s3_rounding_mode <= s2_rounding_mode;
-        //s3_aligned_smaller_mantissa <= s2_aligned_smaller_mantissa[47:24]; 
-        //s3_aligned_smaller_mantissa <= s2_aligned_smaller_mantissa[47:21]; 
+        s3_rounding_mode <= s2_rounding_mode; 
         s3_aligned_smaller_mantissa <= s2_aligned_smaller_mantissa[47:22];
         s3_alignment_sticky_bit <= s2_alignment_sticky_bit;
         s3_larger_number <= s2_larger;
@@ -245,23 +238,16 @@ logic s3_exact_zero;
 logic [26:0] s3_adder_input1, s3_adder_input2;
 logic [26:0] s3_subtractor_input1, s3_subtractor_input2;
 assign s3_adder_input1 = {1'b1, s3_larger_number.mantissa, 3'b000};
-//assign s3_adder_input2 = {s3_aligned_smaller_mantissa, 3'b000};
-//assign s3_adder_input2 = s3_aligned_smaller_mantissa;
-//assign s3_adder_input2 = {s3_aligned_smaller_mantissa, 1'b0};
 assign s3_adder_input2 = {s3_aligned_smaller_mantissa, s3_alignment_sticky_bit};
 
 KSA_nbits #(.WIDTH(27)) s3_adder (.in1(s3_adder_input1), .in2(s3_adder_input2), .out(s3_addition_result_sum), .cout(s3_addition_result_carry));
 
 assign s3_subtractor_input1 = {1'b1, s3_larger_number.mantissa, 3'b000};
-//assign s3_subtractor_input2 = ~{s3_aligned_smaller_mantissa, 3'b000} + 1'b1;
-//assign s3_subtractor_input2 = ~s3_aligned_smaller_mantissa + 1'b1;
-//assign s3_subtractor_input2 = ~{s3_aligned_smaller_mantissa, 1'b0} + 1'b1;
 assign s3_subtractor_input2 = ~{s3_aligned_smaller_mantissa, s3_alignment_sticky_bit} + 1'b1;
 
 KSA_nbits #(.WIDTH(27)) s3_subtractor (.in1(s3_subtractor_input1), .in2(s3_subtractor_input2), .out(s3_subtraction_result), .cout());
 
-//assign s3_exact_zero = s3_op_is_subtraction ? ({1'b1, s3_larger_number.mantissa, 3'b000} == {s3_aligned_smaller_mantissa, 3'b000}) : 1'b0;
-//assign s3_exact_zero = s3_op_is_subtraction ? ({1'b1, s3_larger_number.mantissa, 3'b000} == s3_aligned_smaller_mantissa) : 1'b0;
+
 assign s3_exact_zero = s3_op_is_subtraction ? ({1'b1, s3_larger_number.mantissa, 3'b000} == {s3_aligned_smaller_mantissa, 1'b0}) : 1'b0;
 
 //store stage 3 values
@@ -347,7 +333,6 @@ logic[22:0] s4_sub_normalized_mantissa;
 logic[8:0] s4_sub_normalized_exponent;
 logic s4_sub_normalized_guard, s4_sub_normalized_round, s4_sub_normalized_sticky;
 always_comb begin
-    //s4_sub_normalized_mantissa_temp = s4_subtraction_result[25:0] << s4_sub_shift_amount;
     s4_sub_normalized_mantissa_temp = s4_subtraction_result << s4_sub_shift_amount;
     //extra bit is added to detect underflow
     s4_sub_normalized_exponent = {1'b0, s4_larger_number_exponent} - {4'b0000, s4_sub_shift_amount};
@@ -465,15 +450,15 @@ always_ff @(posedge clk or posedge rst) begin
         inexact <= 0;
         invalid_operation <= 0;
         valid_data_out <= 0;
-        guard <= 0;
-        round <= 0;
-        sticky <= 0;
-        normalized_mantissa <= s5_normalized_mantissa;
+        //guard <= 0;
+        //round <= 0;
+        //sticky <= 0;
+        //normalized_mantissa <= s5_normalized_mantissa;
     end else begin
-        guard <= s5_normalized_guard;
-        round <= s5_normalized_round;
-        sticky <= s5_normalized_sticky;
-        normalized_mantissa<= s5_normalized_mantissa;
+        //guard <= s5_normalized_guard;
+        //round <= s5_normalized_round;
+        //sticky <= s5_normalized_sticky;
+        //normalized_mantissa<= s5_normalized_mantissa;
         invalid_operation <= s5_input_is_invalid;
         valid_data_out <= s5_valid_data_in;
         if(s5_special_case) begin

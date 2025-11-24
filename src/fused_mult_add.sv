@@ -279,12 +279,12 @@ always_comb begin
         s4_larger_number_sign = s4_in3.sign;
     end
 
-    s4_aligned_smaller_mantissa = s4_smaller_mantissa >> s4_shift_amount;
+    s4_aligned_smaller_mantissa = {s4_smaller_mantissa, 27'd0} >> s4_shift_amount;
 
-    if(s4_shift_amount >= 54) begin
+    if(s4_shift_amount >= 26) begin
         s4_alignment_sticky_bit = 1;
     end else begin
-        s4_alignment_sticky_bit = | s4_aligned_smaller_mantissa[26:0];
+        s4_alignment_sticky_bit = | s4_aligned_smaller_mantissa[27:0];
     end
 end
 
@@ -296,7 +296,7 @@ logic s5_special_case;
 logic s5_valid_data_in;
 logic[2:0] s5_rounding_mode;
 
-logic[26:0] s5_aligned_smaller_mantissa;
+logic[25:0] s5_aligned_smaller_mantissa;
 logic s5_alignment_sticky_bit;
 logic signed[9:0] s5_larger_number_exponent;
 logic[26:0] s5_larger_mantissa;
@@ -324,8 +324,8 @@ always_ff @(posedge clk or posedge rst) begin
         s5_special_case <= s4_special_case;
         s5_valid_data_in <= s4_valid_data_in;
         s5_rounding_mode <= s4_rounding_mode;
-        //s5_aligned_smaller_mantissa <= s4_aligned_smaller_mantissa[53:27];
-        s5_aligned_smaller_mantissa <= s4_aligned_smaller_mantissa[26:0];
+        s5_aligned_smaller_mantissa <= s4_aligned_smaller_mantissa[53:28];
+        //s5_aligned_smaller_mantissa <= s4_aligned_smaller_mantissa[26:0];
         s5_alignment_sticky_bit <= s4_alignment_sticky_bit;
         s5_larger_number_exponent <= s4_larger_number_exponent;
         s5_larger_mantissa <= s4_larger_mantissa;
@@ -337,13 +337,15 @@ end
 //stage 5: add/subtract
 logic[26:0] s5_addition_result_sum;
 logic s5_addition_result_carry;
+logic[26:0] s5_adder_input2;
 logic[26:0] s5_subtraction_result;
 logic s5_exact_zero;
 logic[26:0] s5_subtractor_input2;
 
-KSA_nbits #(.WIDTH(27)) s5_adder (.in1(s5_larger_mantissa), .in2(s5_aligned_smaller_mantissa), .out(s5_addition_result_sum), .cout(s5_addition_result_carry));
+assign s5_adder_input2 = {s5_aligned_smaller_mantissa, s5_alignment_sticky_bit};
+KSA_nbits #(.WIDTH(27)) s5_adder (.in1(s5_larger_mantissa), .in2(s5_adder_input2), .out(s5_addition_result_sum), .cout(s5_addition_result_carry));
 
-assign s5_subtractor_input2 = ~s5_aligned_smaller_mantissa + 1'b1;
+assign s5_subtractor_input2 = ~{s5_aligned_smaller_mantissa, s5_alignment_sticky_bit} + 1'b1;
 
 KSA_nbits #(.WIDTH(27)) s3_subtractor (.in1(s5_larger_mantissa), .in2(s5_subtractor_input2), .out(s5_subtraction_result), .cout());
 
@@ -360,7 +362,6 @@ logic[2:0] s6_rounding_mode;
 logic[27:0] s6_addition_result;
 logic[26:0] s6_subtraction_result;
 logic s6_op_is_subtraction;
-logic s6_alignment_sticky_bit;
 logic s6_exact_zero;
 logic signed[9:0] s6_larger_number_exponent;
 logic s6_larger_number_sign;
@@ -377,7 +378,6 @@ always_ff @(posedge clk or posedge rst) begin
         s6_addition_result <= '0;
         s6_subtraction_result <= '0;
         s6_op_is_subtraction <= 0;
-        s6_alignment_sticky_bit <= 0;
         s6_exact_zero <= 0;
         s6_larger_number_exponent <= '0;
         s6_larger_number_sign <= 0;
@@ -393,14 +393,14 @@ always_ff @(posedge clk or posedge rst) begin
         s6_addition_result <= {s5_addition_result_carry, s5_addition_result_sum};
         s6_subtraction_result <= s5_subtraction_result;
         s6_op_is_subtraction <= s5_op_is_subtraction;
-        s6_alignment_sticky_bit <= s5_alignment_sticky_bit;
+
         s6_exact_zero <= s5_exact_zero;
         s6_larger_number_exponent <= s5_larger_number_exponent;
         s6_larger_number_sign <= s5_larger_sign;
     end
 end
 
-//Stage 6: Normalization and Rounding
+//Stage 6: Normalization
 
 //determine is adding caused an overflow, if so left shift by one and add one to the exponent 
 logic s6_add_overflow;
@@ -414,13 +414,13 @@ always_comb begin
         s6_add_normalized_mantissa  = s6_addition_result[26:4];
         s6_add_normalized_guard = s6_addition_result[3];
         s6_add_normalized_round = s6_addition_result[2];
-        s6_add_normalized_sticky = s6_addition_result[1] | s6_addition_result[0] | s6_alignment_sticky_bit;
+        s6_add_normalized_sticky = s6_addition_result[1] | s6_addition_result[0];
     end
     else begin
         s6_add_normalized_mantissa  = s6_addition_result[25:3];
         s6_add_normalized_guard = s6_addition_result[2];
         s6_add_normalized_round = s6_addition_result[1];
-        s6_add_normalized_sticky = s6_addition_result[0] | s6_alignment_sticky_bit;
+        s6_add_normalized_sticky = s6_addition_result[0];
     end
     //extra bit is added to detect overflow
     s6_add_normalized_exponent = s6_larger_number_exponent + s6_add_overflow;
@@ -441,7 +441,7 @@ always_comb begin
     s6_sub_normalized_mantissa = s6_sub_normalized_mantissa_temp[25:3];
     s6_sub_normalized_guard = s6_sub_normalized_mantissa_temp[2];
     s6_sub_normalized_round = s6_sub_normalized_mantissa_temp[1];
-    s6_sub_normalized_sticky = s6_sub_normalized_mantissa_temp[0] | s6_alignment_sticky_bit;
+    s6_sub_normalized_sticky = s6_sub_normalized_mantissa_temp[0];
 end
 
 //forward relevant result
@@ -464,25 +464,80 @@ always_comb begin
     end
 end
 
-//rounding and flush to zero 
-logic[23:0] s6_rounded_mantissa_temp;
-logic[22:0] s6_rounded_mantissa;
-logic signed [9:0] s6_rounded_exponent;
-logic s6_exponent_overflow, s6_exponent_underflow, s6_has_grs_bits;
-floating_point_rounder rounder(.mantissa(s6_normalized_mantissa), .guard(s6_normalized_guard), .round(s6_normalized_round), .sticky(s6_normalized_sticky),
-.sign(s6_larger_number_sign), .rounding_mode(s6_rounding_mode), .rounded_mantissa_pre_overflow_detection(s6_rounded_mantissa_temp));
-always_comb begin
-    if(s6_rounded_mantissa_temp[23]) begin
-        s6_rounded_mantissa = '0;
-        s6_rounded_exponent = s6_normalized_exponent + 1;
+//stage 7: rounding and output
+
+logic[22:0] s7_normalized_mantissa;
+logic[8:0] s7_normalized_exponent;
+logic s7_normalized_guard;
+logic s7_normalized_round;
+logic s7_normalized_sticky;
+logic s7_larger_number_sign;
+logic s7_op_is_subtraction;
+logic s7_exact_zero;
+
+
+fp_32b_t s7_special_result;
+logic s7_input_is_invalid;
+logic s7_input_is_flushed;
+logic s7_special_case;
+logic s7_valid_data_in;
+logic[2:0] s7_rounding_mode;
+
+always_ff @(posedge clk or posedge rst) begin
+    if(rst) begin
+        s7_normalized_mantissa <= 0;
+        s7_normalized_exponent <= 0;
+        s7_normalized_guard <= 0;
+        s7_normalized_round <= 0;
+        s7_normalized_sticky <= 0;
+        s7_larger_number_sign <= 0;
+        s7_op_is_subtraction <= 0;
+        s7_exact_zero <= 0;
+
+        s7_special_result <= 0;
+        s7_input_is_invalid <= 0;
+        s7_input_is_flushed <= 0;
+        s7_special_case <= 0;
+        s7_valid_data_in <= 0;
+        s7_rounding_mode <= 0;
     end else begin
-        s6_rounded_mantissa = s6_rounded_mantissa_temp[22:0];
-        s6_rounded_exponent = s6_normalized_exponent;
+        s7_normalized_mantissa <= s6_normalized_mantissa;
+        s7_normalized_exponent <= s6_normalized_exponent;
+        s7_normalized_guard <= s6_normalized_guard;
+        s7_normalized_round <= s6_normalized_round;
+        s7_normalized_sticky <= s6_normalized_sticky;
+        s7_larger_number_sign <= s6_larger_number_sign;
+        s7_op_is_subtraction <= s6_op_is_subtraction;
+        s7_exact_zero <= s6_exact_zero;
+
+        s7_special_result <= s6_special_result;
+        s7_input_is_invalid <= s6_input_is_invalid;
+        s7_input_is_flushed <= s6_input_is_flushed;
+        s7_special_case <= s6_special_case;
+        s7_valid_data_in <= s6_valid_data_in;
+        s7_rounding_mode <= s6_rounding_mode;
+    end
+end
+
+//rounding and flush to zero 
+logic[23:0] s7_rounded_mantissa_temp;
+logic[22:0] s7_rounded_mantissa;
+logic signed [9:0] s7_rounded_exponent;
+logic s7_exponent_overflow, s7_exponent_underflow, s7_has_grs_bits;
+floating_point_rounder rounder(.mantissa(s7_normalized_mantissa), .guard(s7_normalized_guard), .round(s7_normalized_round), .sticky(s7_normalized_sticky),
+.sign(s7_larger_number_sign), .rounding_mode(s7_rounding_mode), .rounded_mantissa_pre_overflow_detection(s7_rounded_mantissa_temp));
+always_comb begin
+    if(s7_rounded_mantissa_temp[23]) begin
+        s7_rounded_mantissa = '0;
+        s7_rounded_exponent = s7_normalized_exponent + 1;
+    end else begin
+        s7_rounded_mantissa = s7_rounded_mantissa_temp[22:0];
+        s7_rounded_exponent = s7_normalized_exponent;
     end
 
-    s6_exponent_overflow = (s6_normalized_exponent > 10'sd254);
-    s6_exponent_underflow = ((s6_rounded_exponent <= 0));
-    s6_has_grs_bits = s6_normalized_guard | s6_normalized_round | s6_normalized_sticky;
+    s7_exponent_overflow = (s7_normalized_exponent > 10'sd254);
+    s7_exponent_underflow = ((s7_rounded_exponent <= 0));
+    s7_has_grs_bits = s7_normalized_guard | s7_normalized_round | s7_normalized_sticky;
 
 end
 //propagate final values to output
@@ -496,59 +551,59 @@ always_ff @(posedge clk or posedge rst) begin
         valid_data_out <= 0;
 
     end else begin
-        invalid_operation <= s6_input_is_invalid;
-        valid_data_out <= s6_valid_data_in;
-        if(s6_special_case) begin
+        invalid_operation <= s7_input_is_invalid;
+        valid_data_out <= s7_valid_data_in;
+        if(s7_special_case) begin
             overflow <= 1'b0;
             inexact <= 1'b0;
-            underflow <= s6_input_is_flushed;
-            out <= s6_special_result;
-        end else if(s6_exact_zero) begin
+            underflow <= s7_input_is_flushed;
+            out <= s7_special_result;
+        end else if(s7_exact_zero) begin
             overflow <= 1'b0;
-            underflow <= s6_input_is_flushed;
+            underflow <= s7_input_is_flushed;
             inexact <= 1'b0;
-            if(s6_rounding_mode == RDN) out <= {1'b1, 31'b0};
+            if(s7_rounding_mode == RDN) out <= {1'b1, 31'b0};
             else out <= 32'b0;
-        end else if(s6_exponent_overflow) begin
+        end else if(s7_exponent_overflow) begin
             overflow <= 1'b1;
             underflow <= 1'b0;
             inexact <= 1'b1;
-            case(s6_rounding_mode)
+            case(s7_rounding_mode)
                 RTZ: begin
-                    out <= {s6_larger_number_sign, 8'hFE, 23'h7FFFFF};
+                    out <= {s7_larger_number_sign, 8'hFE, 23'h7FFFFF};
                 end
                 RDN: begin
-                    if(s6_larger_number_sign) begin
+                    if(s7_larger_number_sign) begin
                         out <= {1'b1, 8'hFF, 23'h0};
                     end else begin
                         out <= {1'b0, 8'hFE, 23'h7FFFFF};
                     end
                 end
                 RUP: begin
-                    if(s6_larger_number_sign) begin
+                    if(s7_larger_number_sign) begin
                         out <= {1'b1, 8'hFE, 23'h7FFFFF};
                     end else begin
                         out <= {1'b0, 8'hFF, 23'h0};
                     end
                 end
                 default: begin
-                    out <= {s6_larger_number_sign, 8'hFF, 23'h0};
+                    out <= {s7_larger_number_sign, 8'hFF, 23'h0};
                 end
             endcase
-        end else if(s6_exponent_underflow) begin
+        end else if(s7_exponent_underflow) begin
             overflow <= 1'b0;
-            underflow <= s6_has_grs_bits;
-            inexact <= s6_has_grs_bits;
-            if(s6_rounding_mode == RDN) begin
+            underflow <= s7_has_grs_bits;
+            inexact <= s7_has_grs_bits;
+            if(s7_rounding_mode == RDN) begin
                 out <= {1'b1, 8'h0, 23'h0};
             end else begin
-                out <= {s6_larger_number_sign, 8'h0, 23'h0};
+                out <= {s7_larger_number_sign, 8'h0, 23'h0};
             end
         end else begin
             overflow <= 1'b0;
             underflow <= 1'b0;
-            inexact <= s6_has_grs_bits;
-            out <= {s6_larger_number_sign, s6_rounded_exponent[7:0], s6_rounded_mantissa};
+            inexact <= s7_has_grs_bits;
+            out <= {s7_larger_number_sign, s7_rounded_exponent[7:0], s7_rounded_mantissa};
         end
     end
 end
