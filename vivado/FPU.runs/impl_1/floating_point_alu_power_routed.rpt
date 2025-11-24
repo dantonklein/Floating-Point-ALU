@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
-| Date             : Thu Nov 20 17:13:10 2025
+| Date             : Mon Nov 24 01:37:37 2025
 | Host             : dantop running 64-bit major release  (build 9200)
 | Command          : report_power -file floating_point_alu_power_routed.rpt -pb floating_point_alu_power_summary_routed.pb -rpx floating_point_alu_power_routed.rpx
 | Design           : floating_point_alu
@@ -30,14 +30,14 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.293        |
+| Total On-Chip Power (W)  | 0.290        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.186        |
+| Dynamic (W)              | 0.183        |
 | Device Static (W)        | 0.107        |
 | Effective TJA (C/W)      | 11.5         |
-| Max Ambient (C)          | 81.6         |
-| Junction Temperature (C) | 28.4         |
+| Max Ambient (C)          | 81.7         |
+| Junction Temperature (C) | 28.3         |
 | Confidence Level         | Low          |
 | Setting File             | ---          |
 | Simulation Activity File | ---          |
@@ -53,19 +53,19 @@ Table of Contents
 | On-Chip                 | Power (W) | Used     | Available | Utilization (%) |
 +-------------------------+-----------+----------+-----------+-----------------+
 | Clocks                  |     0.021 |        3 |       --- |             --- |
-| Slice Logic             |     0.048 |     9360 |       --- |             --- |
-|   LUT as Logic          |     0.044 |     4256 |     53200 |            8.00 |
-|   Register              |     0.002 |     2954 |    106400 |            2.78 |
-|   CARRY4                |     0.001 |      246 |     13300 |            1.85 |
-|   LUT as Shift Register |    <0.001 |      251 |     17400 |            1.44 |
+| Slice Logic             |     0.046 |     9591 |       --- |             --- |
+|   LUT as Logic          |     0.042 |     4202 |     53200 |            7.90 |
+|   Register              |     0.002 |     3076 |    106400 |            2.89 |
+|   CARRY4                |     0.001 |      250 |     13300 |            1.88 |
+|   LUT as Shift Register |    <0.001 |      270 |     17400 |            1.55 |
 |   F7/F8 Muxes           |    <0.001 |      112 |     53200 |            0.21 |
 |   Others                |     0.000 |       76 |       --- |             --- |
-| Signals                 |     0.056 |     8900 |       --- |             --- |
+| Signals                 |     0.053 |     8999 |       --- |             --- |
 | Block RAM               |     0.002 |      0.5 |       140 |            0.36 |
 | DSPs                    |     0.041 |       48 |       220 |           21.82 |
-| I/O                     |     0.019 |      143 |       200 |           71.50 |
+| I/O                     |     0.020 |      143 |       200 |           71.50 |
 | Static Power            |     0.107 |          |           |                 |
-| Total                   |     0.293 |          |           |                 |
+| Total                   |     0.290 |          |           |                 |
 +-------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -75,7 +75,7 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.176 |       0.168 |      0.008 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.171 |       0.163 |      0.008 |       NA    | Unspecified | NA         |
 | Vccaux    |       1.800 |     0.012 |       0.002 |      0.011 |       NA    | Unspecified | NA         |
 | Vcco33    |       3.300 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -151,29 +151,30 @@ Table of Contents
 +-----------------------------+-----------+
 | Name                        | Power (W) |
 +-----------------------------+-----------+
-| floating_point_alu          |     0.186 |
-|   addsub                    |     0.012 |
-|   division                  |     0.036 |
+| floating_point_alu          |     0.183 |
+|   addsub                    |     0.010 |
+|   division                  |     0.035 |
 |     s13_reciprocal          |     0.027 |
 |       s0_reciprocal_lut     |     0.002 |
-|       s1_mult               |     0.005 |
+|       s1_mult               |     0.004 |
 |       s4_mult               |     0.005 |
 |       s6_mult               |     0.005 |
 |       s9_mult               |     0.005 |
 |     s13_s15_mult            |     0.007 |
-|   fused_mult_add            |     0.026 |
-|     s2_s4_multiplier        |     0.016 |
+|   fused_mult_add            |     0.025 |
+|     s2_s4_multiplier        |     0.012 |
 |   max                       |     0.002 |
-|   multiply                  |     0.040 |
+|   multiply                  |     0.039 |
 |     s2_s4_multiplier        |     0.035 |
-|   sqrt                      |     0.048 |
+|   sqrt                      |     0.049 |
 |     s17_inverse_square_root |     0.040 |
+|       s0_inverse_sqrt_lut   |     0.001 |
 |       s10_mult              |     0.005 |
 |       s13_mult              |     0.005 |
 |       s1_mult               |     0.005 |
 |       s3_mult               |     0.005 |
-|       s6_mult               |     0.006 |
-|       s8_mult               |     0.006 |
+|       s6_mult               |     0.005 |
+|       s8_mult               |     0.005 |
 |     s17_mult                |     0.006 |
 +-----------------------------+-----------+
 

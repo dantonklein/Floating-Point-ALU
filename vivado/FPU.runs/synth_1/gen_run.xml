@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="synth_1" LaunchPart="xc7z020clg484-1" LaunchTime="1763676491" LaunchIncrCheckpoint="$PSRCDIR/utils_1/imports/synth_1/floating_point_alu.dcp">
+<GenRun Id="synth_1" LaunchPart="xc7z020clg484-1" LaunchTime="1763966065" LaunchIncrCheckpoint="$PSRCDIR/utils_1/imports/synth_1/floating_point_alu.dcp">
   <File Type="PA-TCL" Name="floating_point_alu.tcl"/>
   <File Type="REPORTS-TCL" Name="floating_point_alu_reports.tcl"/>
   <File Type="RDS-RDS" Name="floating_point_alu.vds"/>
@@ -182,9 +182,7 @@
     </Config>
   </FileSet>
   <Strategy Version="1" Minor="2">
-    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
-      <Desc>Vivado Synthesis Defaults</Desc>
-    </StratHandle>
+    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
     <Step Id="synth_design"/>
   </Strategy>
 </GenRun>

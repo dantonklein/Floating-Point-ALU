@@ -10,7 +10,8 @@ It utilizes single precision (32-bit) floating point arithmetic and all modules 
 Addition and subtraction share a pipeline that decides on the operation based on the signs of the inputs. [Kogge-Stone Adders](https://github.com/dantonklein/Advanced-Adders-and-Multipliers) were utilized for addition/subtraction to optimize the design for speed. It takes 5 cycles for completion, with those stages being:
 <ol>
   <li>Input Handling</li>
-  <li>Alignment</li>
+  <li>Alignment 1</li>
+  <li>Alignment 2</li>
   <li>Addition/Subtraction</li>
   <li>Normalization</li>
   <li>Rounding</li>
@@ -36,6 +37,7 @@ Fused multiply-add combines functionality of both addition/subtraction and multi
   <li>Multiplication 1 and Exponent Handling</li>
   <li>Multiplication 2</li>
   <li>Normalization and Alignment</li>
+  <li>Alignment 2</li>
   <li>Addition/Subtraction</li>
   <li>Normalization</li>
   <li>Rounding</li>

@@ -3,8 +3,8 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Thu Nov 20 17:11:30 2025
-# Process ID         : 31572
+# Start of session at: Mon Nov 24 01:36:26 2025
+# Process ID         : 5360
 # Current directory  : C:/Users/klein/Documents/projects/Floating-Point-ALU/vivado/FPU.runs/impl_1
 # Command line       : vivado.exe -log floating_point_alu.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source floating_point_alu.tcl -notrace
 # Log file           : C:/Users/klein/Documents/projects/Floating-Point-ALU/vivado/FPU.runs/impl_1/floating_point_alu.vdi
@@ -19,6 +19,6 @@
 # Host memory        : 33412 MB
 # Swap memory        : 16642 MB
 # Total Virtual      : 50055 MB
-# Available Virtual  : 21419 MB
+# Available Virtual  : 15641 MB
 #-----------------------------------------------------------
 source floating_point_alu.tcl -notrace
